@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="true" name="zolertiaMiddleware">
+   <implementation class="br.ufpe.gprt.eventmanager.impl.EventManager"/>
+   <property name="SOAP.service.name" type="String" value="ZolertiaServices"/>
+   <reference cardinality="1..1" interface="eu.linksmart.network.NetworkManagerApplication" name="NetworkManagerApplication" policy="static"/>
+   <reference cardinality="1..1" interface="eu.linksmart.clients.RemoteWSClientProvider" name="RemoteWSClientProvider" policy="static"/>
+   <service>
+      <provide interface="br.ufpe.gprt.eventmanager.EventManagerPort"/>
+   </service>
+</scr:component>
