@@ -31,6 +31,7 @@ public class ResourceManager {
 	private static Vector<ContextManager.Enum_Action> actions;
 	private static List<Subscription> subscriptions;
 	private static Vector<Context> predefinedContexts;
+	private static Vector<Context> activeContexts;
 
 	public static ResourceManager getInstance() {
 		if (instance == null) {
@@ -39,6 +40,7 @@ public class ResourceManager {
 			situations = new TreeMap<String, EventCycle>();
 			actions = new Vector<ContextManager.Enum_Action>();
 			subscriptions = new ArrayList<Subscription>();
+			activeContexts = new Vector<Context>();
 			predefinedContexts = fillContexts();
 			
 		}
@@ -70,6 +72,19 @@ public class ResourceManager {
 		
 		return result;
 	}
+	
+	private synchronized void insertActiveContext(Context context){
+		if (!this.activeContexts.contains(context))
+			this.activeContexts.add(context);
+	}
+	
+	private synchronized void removeActiveContext(Context context){
+		this.activeContexts.remove(context);
+	}
+	
+/*	private synchronized Vector<Context> getActiveContext(){
+		
+	}*/
 
 	public synchronized long getReceivedEvents() {
 		return listeners.size();

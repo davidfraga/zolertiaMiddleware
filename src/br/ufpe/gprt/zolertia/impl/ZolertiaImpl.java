@@ -92,7 +92,7 @@ public class ZolertiaImpl implements IZolertia {
 		}
 
 		if (sensorData != null) {
-			int nodeId = (int) Float.parseFloat(sensorData.getNodeID());
+			int nodeId = sensorData.getNodeID();
 			SensorNode node = findNode(rootNode, nodeId);
 			int bestNode = (int) Float.parseFloat(sensorData
 					.getBestNeighborID());
@@ -117,7 +117,7 @@ public class ZolertiaImpl implements IZolertia {
 				}
 			}
 			node.setNodeData(sensorData);
-
+			
 			return;
 		}
 
@@ -185,5 +185,4 @@ public class ZolertiaImpl implements IZolertia {
 		ans += collectData(rootNode);
 		return ans;
 	}
-
 }

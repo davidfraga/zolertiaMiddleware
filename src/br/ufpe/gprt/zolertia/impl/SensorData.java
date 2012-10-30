@@ -54,14 +54,14 @@ public class SensorData implements SensorInfo {
   private final long systemTime;
   private int seqno;
   private boolean isDuplicate;
-private Node node;
+  private int nodeId;
 
-  public SensorData(Node node, int[] values, long systemTime) {
-    this.node = node;
+  public SensorData(int nodeId, int[] values, long systemTime) {
     this.values = values;
     this.nodeTime = ((values[TIMESTAMP1] << 16) + values[TIMESTAMP2]) * 1000L;
     this.systemTime = systemTime;
     this.seqno = values[SEQNO];
+    this.nodeId = nodeId;
     
 /*    for (String  item : ZolertiaImpl.nodeTable.keySet()) {
 		if (item == getNodeID()) {
@@ -72,12 +72,13 @@ private Node node;
     ZolertiaImpl.nodeTable.put(getNodeID(), this);*/
   }
 
-  public Node getNode() {
+/*  public Node getNode() {
     return node;
   }
+  */
 
-  public String getNodeID() {
-    return node.getID();
+  public int getNodeID() {
+    return nodeId;
   }
 
   public boolean isDuplicate() {
@@ -174,9 +175,10 @@ private Node node;
       System.err.println("Failed to parse data line: '" + line + "'");
       return null;
     }
-    String nodeID = mapNodeID(data[NODE_ID]);
-    Node node = new Node(nodeID);
-    SensorData ans = new SensorData(node, data, systemTime);
+   // String nodeID = mapNodeID(data[NODE_ID]);
+    //Node node = new Node(nodeID);
+    //SensorData ans = new SensorData(node, data, systemTime);
+    SensorData ans = new SensorData(data[SensorInfo.NODE_ID],data, systemTime);
     
     return ans;
   }
