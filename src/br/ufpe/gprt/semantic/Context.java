@@ -2,6 +2,8 @@ package br.ufpe.gprt.semantic;
 
 import java.util.List;
 
+import br.ufpe.gprt.resources.ResourceManager;
+
 public class Context {
 	private String topic;
 	private String description;
@@ -42,5 +44,10 @@ public class Context {
 	
 	public boolean removePolicy(Policy policy){
 		return this.policies.remove(policy);
+	}
+	public void activatePolicies() {
+		for (Policy policy : this.policies) {
+			ResourceManager.getInstance().getPolicyManager().policyStart(policy);
+		}
 	}
 }

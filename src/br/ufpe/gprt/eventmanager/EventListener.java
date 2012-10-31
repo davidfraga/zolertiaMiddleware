@@ -17,15 +17,16 @@ package br.ufpe.gprt.eventmanager;
 import java.io.Serializable;
 
 import br.ufpe.gprt.semantic.ContextManager;
+import br.ufpe.gprt.semantic.PolicyManager;
 
 public class EventListener implements Serializable {
 	private static final long serialVersionUID = 7881364614065395362L;
 	private String name;
 	private String statement;
 	private String condition;
-	private ContextManager.Enum_Action action;
+	private PolicyManager.Enum_Action action;
 
-	public EventListener(String name, String statement, String condition, ContextManager.Enum_Action action) {
+	public EventListener(String name, String statement, String condition, PolicyManager.Enum_Action action) {
 		this.name = name;
 		this.statement = statement;
 		this.condition = condition;
@@ -44,7 +45,7 @@ public class EventListener implements Serializable {
 		return condition;
 	}
 
-	public ContextManager.Enum_Action getClassname() {
+	public PolicyManager.Enum_Action getClassname() {
 		return action;
 	}
 }

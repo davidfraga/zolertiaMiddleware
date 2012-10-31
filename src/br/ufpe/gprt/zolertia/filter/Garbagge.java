@@ -1,25 +1,29 @@
-package br.ufpe.gprt.zolertia.impl;
+package br.ufpe.gprt.zolertia.filter;
 
 import java.util.List;
+
+import br.ufpe.gprt.zolertia.device.SensorNode;
+import br.ufpe.gprt.zolertia.impl.ZolertiaData;
 
 public class Garbagge extends Thread {
 
 
 	private final int TIME_EXPIRED = 60000;
 	private final int TIME_LOOP = 10000;
+	private ZolertiaData zolertiaData;
 	private static boolean isRemoved = false;
 	
 	
-	public Garbagge() {
-
+	public Garbagge(ZolertiaData zolertiaData) {
+		this.zolertiaData = zolertiaData;
 	}
 
 	public void run() {
 		while (true) {
-			if (ZolertiaImpl.rootNode != null)
-				if (ZolertiaImpl.rootNode.getChildren() != null
-					|| ZolertiaImpl.rootNode.getChildren().size() > 0) {
-				depthRun(ZolertiaImpl.rootNode, ZolertiaImpl.rootNode);
+			if (zolertiaData.rootNode != null)
+				if (zolertiaData.rootNode.getChildren() != null
+					|| zolertiaData.rootNode.getChildren().size() > 0) {
+				depthRun(zolertiaData.rootNode, zolertiaData.rootNode);
 			}
 			try {
 				Thread.sleep(TIME_LOOP);

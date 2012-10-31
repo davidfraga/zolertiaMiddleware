@@ -1,100 +1,59 @@
 package br.ufpe.gprt.semantic;
 import java.util.ArrayList;
+import java.util.Vector;
+
+import br.ufpe.gprt.resources.ResourceManager;
+import br.ufpe.gprt.semantic.PolicyManager.Enum_Action;
+import br.ufpe.gprt.semantic.PolicyManager.Enum_Condition;
+import br.ufpe.gprt.semantic.PolicyManager.Enum_DataType;
 
 public class ContextManager {
 
-	private static PolicyManager s_policyManager;
+	//private static PolicyManager s_policyManager;
 
-	public enum Enum_Condition {
-		GREATER_THAN, LESS_THAN, EQUALS
-	}
-
-	public enum Enum_Action {
-		SEND_PACKETS_LESS_FREQUENTLY, SEND_PACKETS_MORE_FREQUENTLY, REBOOT
-	}
-
-	public enum Enum_DataType {
-
-		TEMPERATURE, BATERY_INFORMATION, RSSI, ATUAL_CHANNEL, HOP_COUNT
-
-	}
-	//--Search desired policy in database--//
-	public static int selectPolicy(Enum_DataType interest, Enum_Condition condition,
-			int param, Enum_Action action) {
-
-		int interestCode = 0;
-		int conditionCode = 0;
-		int actionCode = 0;
-		int index = 0;
-
-		//Translate the components of desired policy in codes, to search in database--//
-
-		if (interest == Enum_DataType.TEMPERATURE) {
-			interestCode = 0;
-		}
-
-		if (interest == Enum_DataType.BATERY_INFORMATION) {
-			interestCode = 1;
-		}
-
-		if (interest == Enum_DataType.RSSI) {
-			interestCode = 2;
-		}
-
-		if (interest == Enum_DataType.ATUAL_CHANNEL) {
-			interestCode = 3;
-		}
-
-		if (interest == Enum_DataType.HOP_COUNT) {
-			interestCode = 4;
-		}
-
-		if (condition == Enum_Condition.GREATER_THAN) {
-			conditionCode = 0;
-		}
-
-		if (condition == Enum_Condition.LESS_THAN) {
-			conditionCode = 1;
-		}
-
-		if (condition == Enum_Condition.EQUALS) {
-			conditionCode = 2;
-		}
-		
-		if (action == Enum_Action.SEND_PACKETS_LESS_FREQUENTLY) {
-			actionCode = 0;
-		}
-		if (action == Enum_Action.SEND_PACKETS_MORE_FREQUENTLY) {
-			actionCode = 1;
-		}
-		if (action == Enum_Action.REBOOT) {
-			actionCode = 2;
-		}
-		
-		
-		Policy currentPolicy = new Policy(interestCode, conditionCode, param, actionCode);
-		
-		/*--verifies that the policy already exists in the database. 
-		If not, will be added. The index of it is returned*/
-
-		if (s_policyManager.containPolicy(currentPolicy)) {
-			index = s_policyManager.searchPolicy(currentPolicy);
-		} else {
-			s_policyManager.addPolicy(currentPolicy);
-			index = s_policyManager.searchPolicy(currentPolicy);
-		}
-
-		return index;
-	}
-
-	public static Policy getPolicyByIndex(int index) {
-
-		return s_policyManager.getPolicyByIndex(index);
-	}
+	private static Vector<Context> predefinedContexts;
+	private static Vector<Context> activeContexts;
 
 	public ContextManager() {
 
-		s_policyManager = new PolicyManager();
+		//s_policyManager = new PolicyManager();
+		predefinedContexts = new Vector<Context>();
+		activeContexts = new Vector<Context>();
+		fillContexts();
+	}
+	
+	public Vector<Context> getPredefinedContexts(){
+		return predefinedContexts;
+	}
+	private void fillContexts() {
+		// Human Body Context Construction
+		String topic = "human_body_temperature";
+		String description = "the human body temperature should not be less than 35ºC or greater than 40ºC";
+		Policy h1_policy = ResourceManager.getInstance().getPolicyManager().createPolicy(Enum_DataType.TEMPERATURE, Enum_Condition.LESS_THAN, 35, Enum_Action.SEND_PACKETS_MORE_FREQUENTLY);
+		Policy h2_policy = ResourceManager.getInstance().getPolicyManager().createPolicy(Enum_DataType.TEMPERATURE, Enum_Condition.GREATER_THAN, 40, Enum_Action.SEND_PACKETS_MORE_FREQUENTLY);
+		
+		Vector<Policy> policies = new Vector<Policy>();
+		policies.add(h1_policy);
+		policies.add(h2_policy);
+		Context humanbody = new Context(topic, description, policies);
+		
+		predefinedContexts.add(humanbody);
+		// End of Human Body Context Construction
+
+	}
+	
+	public void insertActiveContext(Context context){
+		if (!this.activeContexts.contains(context))
+			this.activeContexts.add(context);
+		context.activatePolicies();
+	}
+	
+	public void removeActiveContext(Context context){
+		this.activeContexts.remove(context);
+	}
+	
+	public Vector<Context> getActiveContexts(){
+		return activeContexts;
 	}
 
 }

@@ -15,7 +15,7 @@ import eu.linksmart.network.NetworkManagerApplication;
 
 public class EventManager implements EventManagerPort {
 
-	private static final String SID = EventManagerPort.class.getSimpleName();
+	private static final String SID = "zolertiaMiddleware";
 	private static final String OSGI_SERVICE_HTTP_PORT = System
 			.getProperty("org.osgi.service.http.port");
 	private static final String AXIS_SERVICES_PATH = "http://localhost:"
@@ -84,13 +84,12 @@ public class EventManager implements EventManagerPort {
 		boolean topicExists = false;
 		
 		// Ensure if this topic is already predefinied
-		for (Context item : ResourceManager.getInstance().getPredefinedContexts()) {
+		for (Context item : ResourceManager.getInstance().getContextManager().getPredefinedContexts()) {
 			if (item.getTopic().equals(topic)) {
 				topicExists = true;
 				break;
 			}
-		}
-		
+		}		
 		
 		if (topicExists) {
 			Subscription subscriber = new Subscription();
@@ -128,9 +127,7 @@ public class EventManager implements EventManagerPort {
 		for (Subscription item : ResourceManager.getInstance()
 				.getAllSubscriptions()) {
 			if (item.getTopic().equals(topic))
-				result += ResourceManager.getInstance().extractReport(
-						item.getParts())
-						+ "\n";
+				result += item.extractReport()+ "\n";
 		}
 		return result;
 	}

@@ -27,8 +27,6 @@ public class Subscription implements java.io.Serializable {
 	private int numberOfRetries = 3;
 
 	private java.util.Calendar dateTime;
-	
-	private EventCycle cycle;
 
 	public Subscription() {
 	}
@@ -153,7 +151,7 @@ public class Subscription implements java.io.Serializable {
 						socket.getOutputStream());
 
 				// write reports
-				String data = ResourceManager.getInstance().extractReport(this.parts);
+				String data = extractReport();
 				data += this.dateTime.getTimeInMillis();
 				dataOutputStream.writeBytes(data);
 				dataOutputStream.write("\n".getBytes());
@@ -171,6 +169,14 @@ public class Subscription implements java.io.Serializable {
 				//e.printStackTrace();
 			}
 		}
+	}
+	
+	public String extractReport() {
+		String data = "BEMO-COFRA_REPORT\n";
+		for (Part item : parts) {
+			data += item.getKey() + "=" + item.getValue() + "\n";
+		}
+		return data;
 	}
 
 }

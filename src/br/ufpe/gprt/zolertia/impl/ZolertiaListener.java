@@ -1,6 +1,6 @@
 package br.ufpe.gprt.zolertia.impl;
 
-import br.ufpe.gprt.zolertia.comm.SerialConnection;
+import br.ufpe.gprt.zolertia.deviceCommandProxy.SerialConnection;
 
 /**
  * Interface for sensor event subscribers
@@ -8,9 +8,6 @@ import br.ufpe.gprt.zolertia.comm.SerialConnection;
  * @author simon
  */
 public interface ZolertiaListener {
-
-	public void updateTemperature(String degreesCelsius);
-
 	public void serialData(SerialConnection serialConnection, String line);
 	
 }

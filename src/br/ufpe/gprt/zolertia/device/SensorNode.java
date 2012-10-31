@@ -1,4 +1,4 @@
-package br.ufpe.gprt.zolertia.impl;
+package br.ufpe.gprt.zolertia.device;
 
 import java.util.ArrayList;
 import java.util.List;

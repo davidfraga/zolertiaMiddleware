@@ -38,7 +38,7 @@
  *           $Revision: 1.1 $
  */
 
-package br.ufpe.gprt.zolertia.impl;
+package br.ufpe.gprt.zolertia.device;
 
 
 /**

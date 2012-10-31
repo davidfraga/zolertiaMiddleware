@@ -1,69 +1,40 @@
 package br.ufpe.gprt.zolertia.impl;
 
-import java.net.UnknownHostException;
-import java.rmi.RemoteException;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
+import java.util.Vector;
 
-import org.apache.log4j.Logger;
-import org.osgi.framework.BundleContext;
-import org.osgi.service.component.ComponentContext;
+import br.ufpe.gprt.semantic.Policy;
+import br.ufpe.gprt.semantic.PolicyManager.Enum_Action;
+import br.ufpe.gprt.zolertia.device.SensorData;
+import br.ufpe.gprt.zolertia.device.SensorNode;
+import br.ufpe.gprt.zolertia.deviceCommandProxy.SerialConnection;
+import br.ufpe.gprt.zolertia.deviceCommandProxy.SerialDumpConnection;
+import br.ufpe.gprt.zolertia.filter.Garbagge;
+import br.ufpe.gprt.zolertia.filter.ZolertiaEventsProcessing;
 
-import br.ufpe.gprt.zolertia.IZolertia;
-import br.ufpe.gprt.zolertia.comm.SerialConnection;
-import br.ufpe.gprt.zolertia.comm.SerialDumpConnection;
+public class ZolertiaData {
 
-import eu.linksmart.clients.RemoteWSClientProvider;
-import eu.linksmart.network.NetworkManagerApplication;
+	private static final int READING_LOOP = 3000;
 
-/**
- * Encapsulates communication with an Arduino sensor platform. Provides an
- * interface to request the latest sensor values, set the LED status, and
- * register as an event listener to receive updates about sensor values.
- * 
- * @author simon
- */
-public class ZolertiaImpl implements IZolertia {
-
-	private static final String SID = IZolertia.class.getSimpleName();
-	private static final String OSGI_SERVICE_HTTP_PORT = System
-			.getProperty("org.osgi.service.http.port");
-	private static final String AXIS_SERVICES_PATH = "http://localhost:"
-			+ OSGI_SERVICE_HTTP_PORT + "/axis/services/";
-	private static final String ENDPOINT = AXIS_SERVICES_PATH
-			+ IZolertia.class.getSimpleName();
-
-	private Logger LOG = Logger.getLogger(ZolertiaImpl.class.getName());
-
-	// private SerialCommunication serial;
 	private SerialConnection serial;
 
 	private Set<ZolertiaListener> listeners;
 
-	// public static Hashtable<String, SensorData> nodeTable = new
-	// Hashtable<String, SensorData>();
-	public static SensorNode rootNode;
+	public SensorNode rootNode;
 
-	private String currentTemperature = "";
-	private static final String portName = "COM7";
+	private final String portName = "COM7";
 
-	private BundleContext bundleContext;
+	private Vector<SensorData> sensorsData;
 
-	private NetworkManagerApplication networkManager;
-	private String myHID;
+	private Garbagge garbagge;
 
+	private ZolertiaEventsProcessing eventsProcessing;
 
-	public ZolertiaImpl() {
+	public ZolertiaData() {
 
 		this.serial = new SerialDumpConnection(new ZolertiaListener() {
-
-			@Override
-			public void updateTemperature(String degreesCelsius) {
-				currentTemperature = degreesCelsius;
-				System.out.println(currentTemperature);
-			}
 
 			@Override
 			public void serialData(SerialConnection serialConnection,
@@ -74,6 +45,14 @@ public class ZolertiaImpl implements IZolertia {
 
 		});
 		this.serial.open(portName);
+
+		sensorsData = new Vector<SensorData>();
+
+		garbagge = new Garbagge(this);
+		garbagge.start();
+
+		eventsProcessing = new ZolertiaEventsProcessing(this, READING_LOOP);
+		eventsProcessing.start();
 	}
 
 	public void handleIncomingData(long systemTime, String line) {
@@ -117,10 +96,15 @@ public class ZolertiaImpl implements IZolertia {
 				}
 			}
 			node.setNodeData(sensorData);
-			
-			return;
+			this.sensorsData.add(sensorData);
 		}
 
+	}
+
+	public Vector<SensorData> getUnreadSensorsData() {
+		Vector<SensorData> result = this.sensorsData;
+		this.sensorsData.clear();
+		return result;
 	}
 
 	/**
@@ -135,22 +119,6 @@ public class ZolertiaImpl implements IZolertia {
 			this.listeners = new HashSet<ZolertiaListener>();
 
 		this.listeners.add(listener);
-	}
-
-	private String collectData(SensorNode node) {
-		String ans = "";
-
-		SensorNode thisNode = node;
-		SensorData sensorData = thisNode.getNodeData();
-		if (sensorData != null)
-			ans += sensorData.getAllData();
-
-		List<SensorNode> nodes = thisNode.getChildren();
-		if (nodes != null && nodes.size() > 0)
-			for (SensorNode item : nodes)
-				ans += collectData(item);
-
-		return ans;
 	}
 
 	private SensorNode findNode(SensorNode node, int findById) {
@@ -172,17 +140,20 @@ public class ZolertiaImpl implements IZolertia {
 		return ans;
 	}
 
-	public void setZolertiasCommand(String command) {
+	public void createCommand(Policy policy) {
+		String command = policy.getDataType().name()+","+policy.getCondition().name()+","+policy.getConditionParam()+","+policy.getAction().name();
+		setZolertiasCommand(command);
+	}
+
+	private void setZolertiasCommand(String command) {
 		System.out.println("Enviando comando '" + command + '\'');
 		this.serial.writeSerialData(command);
 		System.out.println("Comando enviado");
-		// return currentTemperature;
-		
 	}
-	
-	public String getZolertiasData(){
-		String ans = "";
-		ans += collectData(rootNode);
-		return ans;
+
+	public void stopCommand(Policy policy) {
+		String command = policy.getDataType().name()+","+policy.getCondition().name()+","+policy.getConditionParam()+","+Enum_Action.STOP_POLICY;
+		setZolertiasCommand(command);
 	}
+
 }

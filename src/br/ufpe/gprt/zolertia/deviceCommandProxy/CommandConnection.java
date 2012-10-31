@@ -38,7 +38,7 @@
  *           $Revision: 1.1 $
  */
 
-package br.ufpe.gprt.zolertia.comm;
+package br.ufpe.gprt.zolertia.deviceCommandProxy;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
