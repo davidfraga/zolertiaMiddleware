@@ -11,6 +11,11 @@ import br.ufpe.gprt.semantic.Policy;
 import br.ufpe.gprt.zolertia.device.SensorData;
 import br.ufpe.gprt.zolertia.impl.ZolertiaData;
 
+/**
+ * Publish sensors data when there is any unread data and when this data satisfies a context
+ * @author GPRT-BEMO
+ *
+ */
 public class ZolertiaEventsProcessing extends Thread{
 
 
@@ -29,19 +34,19 @@ public class ZolertiaEventsProcessing extends Thread{
 		while (running) {
 			for (SensorData sd : zolertia.getUnreadSensorsData()) {
 					for (Context context : ResourceManager.getInstance().getContextManager().getActiveContexts()){
-						boolean contextSatisfied = true;
+						List<Part> parts = new ArrayList<Part>();
 						for (Policy policy : context.getPolicies()){
-							if (!ResourceManager.getInstance().getPolicyManager().policyCheck(policy, sd)){
-								contextSatisfied = false;
+							boolean policyWithAction = false;
+							Part part = ResourceManager.getInstance().getPolicyManager().policyEvaluation(policy, sd, policyWithAction);
+							if (part != null) parts.add(part);
+							else {
+								parts.clear();
 								break;
 							}
+							
 						}
 						
-						if (contextSatisfied) {
-							List<Part> parts = new ArrayList<Part>();
-							for (Policy policy : context.getPolicies()){
-								//policy.getDataType()
-							}
+						if (parts.size()>0){
 							try {
 								ResourceManager.getInstance().publish(context.getTopic(), (Part[])parts.toArray());
 							} catch (RemoteException e) {

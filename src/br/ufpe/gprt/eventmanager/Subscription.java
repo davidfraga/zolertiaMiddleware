@@ -12,11 +12,14 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import br.ufpe.gprt.resources.ResourceManager;
-
-//import eu.linksmart.eventmanager.Part;
-
-public class Subscription implements java.io.Serializable {
+/**
+ * Subscription - this class store the information from the sensors and from the
+ * client
+ * 
+ * @author GPRT-BEMO
+ * 
+ */
+public class Subscription {
 	private java.lang.String topic;
 
 	private java.lang.String endpoint;
@@ -141,36 +144,42 @@ public class Subscription implements java.io.Serializable {
 		this.dateTime = dateTime;
 	}
 
+	/**
+	 * Send the data stored to endpoint and clean the data
+	 */
 	public void sendData() {
-		Socket socket;
-		for (int i = 0; i < numberOfRetries; i++) {
-			// open socket and stream
-			try {
-				socket = new Socket(endpoint, port);
-				DataOutputStream dataOutputStream = new DataOutputStream(
-						socket.getOutputStream());
+		if (parts != null) {
+			Socket socket;
+			for (int i = 0; i < numberOfRetries; i++) {
+				// open socket and stream
+				try {
+					socket = new Socket(endpoint, port);
+					DataOutputStream dataOutputStream = new DataOutputStream(
+							socket.getOutputStream());
 
-				// write reports
-				String data = extractReport();
-				data += this.dateTime.getTimeInMillis();
-				dataOutputStream.writeBytes(data);
-				dataOutputStream.write("\n".getBytes());
-				dataOutputStream.flush();
-				// close socket and stream
-				dataOutputStream.close();
-				socket.close();
-				System.out.println("Subscription: DATA SENT");
-				break;
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				//e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				//e.printStackTrace();
+					// write reports
+					String data = extractReport();
+					data += this.dateTime.getTimeInMillis();
+					dataOutputStream.writeBytes(data);
+					dataOutputStream.write("\n".getBytes());
+					dataOutputStream.flush();
+					// close socket and stream
+					dataOutputStream.close();
+					socket.close();
+					System.out.println("Subscription: DATA SENT");
+					parts = null;
+					break;
+				} catch (UnknownHostException e) {
+					// TODO Auto-generated catch block
+					// e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					// e.printStackTrace();
+				}
 			}
 		}
 	}
-	
+
 	public String extractReport() {
 		String data = "BEMO-COFRA_REPORT\n";
 		for (Part item : parts) {

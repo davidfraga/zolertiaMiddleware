@@ -4,6 +4,12 @@ import java.util.List;
 
 import br.ufpe.gprt.resources.ResourceManager;
 
+/**
+ * It's the topic, or interest of the client or the middleware.
+ * It has a policy list related to this context
+ * @author GPRT-BEMO
+ *
+ */
 public class Context {
 	private String topic;
 	private String description;

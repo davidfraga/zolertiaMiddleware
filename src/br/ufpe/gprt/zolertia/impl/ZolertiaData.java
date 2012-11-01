@@ -14,6 +14,12 @@ import br.ufpe.gprt.zolertia.deviceCommandProxy.SerialDumpConnection;
 import br.ufpe.gprt.zolertia.filter.Garbagge;
 import br.ufpe.gprt.zolertia.filter.ZolertiaEventsProcessing;
 
+/**
+ * Class that has all resources of zolertia network, including nodes (topology),
+ * sensor data, commands to send, activation of garbagge and processing threads
+ * @author GPRT-BEMO
+ *
+ */
 public class ZolertiaData {
 
 	private static final int READING_LOOP = 3000;
@@ -31,6 +37,7 @@ public class ZolertiaData {
 	private Garbagge garbagge;
 
 	private ZolertiaEventsProcessing eventsProcessing;
+
 
 	public ZolertiaData() {
 

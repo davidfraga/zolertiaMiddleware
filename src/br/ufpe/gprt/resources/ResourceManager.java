@@ -19,6 +19,13 @@ import br.ufpe.gprt.semantic.PolicyManager.Enum_DataType;
 import br.ufpe.gprt.zolertia.device.SensorData;
 import br.ufpe.gprt.zolertia.impl.ZolertiaData;
 
+/**
+ * Manages all resources from zolertia middleware. It's a singleton approach
+ * There are others managers supported: ContextManager, PolicyManagar. 
+ * The exchange of zolertia information is done through the ZolertiaData instance 
+ * @author GPRT-BEMO
+ *
+ */
 public class ResourceManager {
 
 	private static ResourceManager instance;
@@ -102,6 +109,13 @@ public class ResourceManager {
 		return result;
 	}
 
+	/**
+	 * Public the information (in1) to relative subscribers
+	 * @param topic
+	 * @param in1
+	 * @return
+	 * @throws RemoteException
+	 */
 	public synchronized boolean publish(String topic, Part[] in1)
 			throws RemoteException {
 		boolean result = false;

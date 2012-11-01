@@ -7,12 +7,15 @@ import br.ufpe.gprt.semantic.PolicyManager.Enum_Action;
 import br.ufpe.gprt.semantic.PolicyManager.Enum_Condition;
 import br.ufpe.gprt.semantic.PolicyManager.Enum_DataType;
 
+/**
+ * Manages the context available. It has predefined contexts and active contexts
+ * @author GPRT-BEMO
+ *
+ */
 public class ContextManager {
 
-	//private static PolicyManager s_policyManager;
-
-	private static Vector<Context> predefinedContexts;
-	private static Vector<Context> activeContexts;
+	private Vector<Context> predefinedContexts;
+	private Vector<Context> activeContexts;
 
 	public ContextManager() {
 
@@ -25,6 +28,10 @@ public class ContextManager {
 	public Vector<Context> getPredefinedContexts(){
 		return predefinedContexts;
 	}
+	
+	/**
+	 * Create predefined contexts
+	 */
 	private void fillContexts() {
 		// Human Body Context Construction
 		String topic = "human_body_temperature";

@@ -4,6 +4,12 @@ import br.ufpe.gprt.semantic.PolicyManager.Enum_Action;
 import br.ufpe.gprt.semantic.PolicyManager.Enum_Condition;
 import br.ufpe.gprt.semantic.PolicyManager.Enum_DataType;
 
+/**
+ * Policy is the rule that satisfies a context.
+ * Its structure is P = DataType,Condition,Value,Action
+ * @author GPRT-BEMO
+ *
+ */
 public class Policy {
 	
 	private Enum_DataType s_dataTypeCode;

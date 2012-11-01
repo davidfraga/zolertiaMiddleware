@@ -58,11 +58,6 @@ public class CommandConnection extends SerialConnection {
   public CommandConnection(ZolertiaListener listener) {
     super(listener);
   }
-
-/*  public CommandConnection(SerialConnectionListener listener, String command) {
-    super(listener);
-    this.command = command;
-  }*/
   
   public CommandConnection(ZolertiaListener listener, String command) {
 	  super(listener);

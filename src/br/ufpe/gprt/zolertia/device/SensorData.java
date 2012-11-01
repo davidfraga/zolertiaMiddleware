@@ -44,6 +44,9 @@ import java.util.Arrays;
 import java.util.Hashtable;
 
 /**
+ * Data read from zolertia network, such as node id, battery, rssi, best neighbor and temperature
+ * Class extracted from Collect-view java project at contiki
+ * @author GPRT-BEMO
  *
  */
 public class SensorData implements SensorInfo {
@@ -62,16 +65,8 @@ public class SensorData implements SensorInfo {
 		this.seqno = values[SEQNO];
 		this.nodeId = nodeId;
 
-		/*
-		 * for (String item : ZolertiaImpl.nodeTable.keySet()) { if (item ==
-		 * getNodeID()) { ZolertiaImpl.nodeTable.remove(item); break; } }
-		 * ZolertiaImpl.nodeTable.put(getNodeID(), this);
-		 */
 	}
 
-	/*
-	 * public Node getNode() { return node; }
-	 */
 
 	public int getNodeID() {
 		return nodeId;

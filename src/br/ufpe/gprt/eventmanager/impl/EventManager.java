@@ -12,7 +12,11 @@ import br.ufpe.gprt.resources.ResourceManager;
 import br.ufpe.gprt.semantic.Context;
 import eu.linksmart.clients.RemoteWSClientProvider;
 import eu.linksmart.network.NetworkManagerApplication;
-
+/**
+ * Class that process webservice data incoming from client side
+ * @author GPRT-BEMO
+ *
+ */
 public class EventManager implements EventManagerPort {
 
 	private static final String SID = "zolertiaMiddleware";
@@ -28,6 +32,10 @@ public class EventManager implements EventManagerPort {
 	private String myHID;
 	private NetworkManagerApplication networkManager;
 
+	/**
+	 * Starting service into linksmart network manager
+	 * @param ctx
+	 */
 	protected void activate(ComponentContext ctx) {
 
 		LOG.debug("Activating "
@@ -62,6 +70,10 @@ public class EventManager implements EventManagerPort {
 
 	}
 
+	/**
+	 * Stopping service and local network manager
+	 * @param ctx
+	 */
 	protected void deactivate(ComponentContext ctx) {
 
 		LOG.debug("Stopping "
@@ -78,6 +90,12 @@ public class EventManager implements EventManagerPort {
 				+ ctx.getBundleContext().getBundle().getSymbolicName());
 	}
 
+	/**
+	 * Subscribe a client 
+	 * If the context is already predefined, make a subscription
+	 * @param topic - context, ex.: human_body_temperature
+	 * @param endpoint - at the moment, just the IP:Port for where we send notifications
+	 */
 	@Override
 	public boolean subscribe(String topic, String endpoint)
 			throws RemoteException {
@@ -100,6 +118,11 @@ public class EventManager implements EventManagerPort {
 		return topicExists;
 	}
 
+	/**
+	 * Unsubscribe the client
+	 * @param topic - context, ex.: human_body_temperature
+	 * @param endpoint - at the moment, just the IP:Port for where we send notifications
+	 */
 	@Override
 	public boolean unsubscribe(String topic, String endpoint)
 			throws RemoteException {
@@ -107,20 +130,10 @@ public class EventManager implements EventManagerPort {
 		return true;
 	}
 
-	@Override
-	public boolean subscribeWithHID(String topic, String hid)
-			throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean unsubscribeWithHID(String topic, String hid)
-			throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
+	/**
+	 * Get a synchronous report
+	 * @param topic - context, ex.: human_body_temperature
+	 */
 	@Override
 	public String poll(String topic) throws RemoteException {
 		String result = "";

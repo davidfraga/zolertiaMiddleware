@@ -40,8 +40,10 @@
 
 package br.ufpe.gprt.zolertia.device;
 
-
 /**
+ * Codes used to translate zolertia message
+ * Class extracted from Collect-view java project at contiki
+ * @author GPRT-BEMO
  *
  */
 public interface SensorInfo {

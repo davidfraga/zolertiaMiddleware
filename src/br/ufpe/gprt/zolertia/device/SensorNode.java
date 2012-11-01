@@ -3,6 +3,11 @@ package br.ufpe.gprt.zolertia.device;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a sensor node at zolertia network
+ * @author GPRT-BEMO
+ *
+ */
 public class SensorNode {
 
 	private int id;

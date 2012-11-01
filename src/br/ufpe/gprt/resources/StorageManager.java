@@ -3,6 +3,11 @@ import java.util.ArrayList;
 
 import br.ufpe.gprt.zolertia.device.SensorData;
 
+/**
+ * Manages the storage action and the stored data
+ * @author GPRT-BEMO
+ *
+ */
 public class StorageManager {
 	
 	private static ArrayList<SensorData> s_sensorValuesList;

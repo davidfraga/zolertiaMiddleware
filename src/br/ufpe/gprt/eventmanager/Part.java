@@ -9,7 +9,7 @@ package br.ufpe.gprt.eventmanager;
 
 //import eu.linksmart.eventmanager.Part;
 
-public class Part  implements java.io.Serializable {
+public class Part {
     private java.lang.String key;
 
     private java.lang.String value;

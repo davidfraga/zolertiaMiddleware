@@ -5,6 +5,12 @@ import java.util.List;
 import br.ufpe.gprt.zolertia.device.SensorNode;
 import br.ufpe.gprt.zolertia.impl.ZolertiaData;
 
+/**
+ * Evaluate the stored sensor data. If the difference from the sensor last reading and 
+ * the time 'NOW' is greater than a 'TIME_EXPIRED' value, remove this node
+ * @author GPRT-BEMO
+ *
+ */
 public class Garbagge extends Thread {
 
 
