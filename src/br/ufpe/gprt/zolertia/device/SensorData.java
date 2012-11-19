@@ -137,6 +137,7 @@ public class SensorData implements SensorInfo {
 	public static SensorData parseSensorData(String line, long systemTime) {
 		String[] components = line.trim().split("[ \t]+");
 		// Check if COOJA log
+		
 		if (components.length == VALUES_COUNT + 2
 				&& components[1].startsWith("ID:")) {
 			if (!components[2].equals("" + VALUES_COUNT)) {

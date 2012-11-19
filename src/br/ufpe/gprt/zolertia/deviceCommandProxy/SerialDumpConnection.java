@@ -40,6 +40,10 @@
 
 package br.ufpe.gprt.zolertia.deviceCommandProxy;
 
+import gnu.io.CommPortIdentifier;
+
+import java.util.Enumeration;
+
 import br.ufpe.gprt.zolertia.impl.ZolertiaListener;
 
 /**
@@ -47,61 +51,89 @@ import br.ufpe.gprt.zolertia.impl.ZolertiaListener;
  */
 public class SerialDumpConnection extends CommandConnection {
 
-  public static final String SERIALDUMP_WINDOWS = "C:\\Users\\GPRT-BEMO\\workspace\\ZolertiaServices\\tools\\serialdump-windows.exe";//"./tools/serialdump-windows.exe";
-  public static final String SERIALDUMP_LINUX = "./tools/serialdump-linux";
+	public static final String SERIALDUMP_WINDOWS = "C:\\Users\\GPRT-BEMO\\workspace\\zolertiaMiddleware\\tools\\serialdump-windows.exe";// "./tools/serialdump-windows.exe";
+	public static final String SERIALDUMP_LINUX = "./tools/serialdump-linux";
 
-  public SerialDumpConnection(ZolertiaListener listener) {
-    super(listener);
-  }
+	public SerialDumpConnection(ZolertiaListener listener) {
+		super(listener);
+	}
 
-  @Override
-  public boolean isMultiplePortsSupported() {
-    return true;
-  }
+	@Override
+	public boolean isMultiplePortsSupported() {
+		return true;
+	}
 
-  @Override
-  public String getConnectionName() {
-    return comPort;
-  }
+	@Override
+	public String getConnectionName() {
+		return comPort;
+	}
 
-  @Override
-  public void open(String comPort) {
-    if (comPort == null) {
-      throw new IllegalStateException("no com port");
-    }
+	@Override
+	public void open(String comPort) {
+		if (comPort == null) {
+			throw new IllegalStateException("no com port");
+		}
 
-    /* Connect to COM using external serialdump application */
-    String osName = System.getProperty("os.name").toLowerCase();
-    String fullCommand;
-    if (osName.startsWith("win")) {
-      fullCommand = SERIALDUMP_WINDOWS + " " + "-b115200" + " " + getMappedComPortForWindows(comPort);
-    } else {
-      fullCommand = SERIALDUMP_LINUX + " " + "-b115200" + " " + comPort;
-    }
-    setCommand(fullCommand);
-    super.open(comPort);
-  }
+		boolean comPortExists = true;
+		/* Connect to COM using external serialdump application */
+		String osName = System.getProperty("os.name").toLowerCase();
+		String fullCommand = null;
+		if (osName.startsWith("win")) {
+			//comPort = getSerialComPort();			
+			if (!comPort.equalsIgnoreCase("COM1")) {
+				fullCommand = SERIALDUMP_WINDOWS + " " + "-b115200" + " "
+						+ getMappedComPortForWindows(comPort);
+			} else {
+				System.out.println("Zolertia is not connected!");
+				comPortExists = false;
+			}
+		} else {
+			fullCommand = SERIALDUMP_LINUX + " " + "-b115200" + " " + comPort;
+		}
+		if (comPortExists) {
+			setCommand(fullCommand);
+			super.open(comPort);
+		}
+	}
 
-  @Override
-  protected void standardData(String line) {
-    serialData(line);
-  }
+	private String getSerialComPort() {
 
-  @Override
-  protected void errorData(String line) {
-    if (!isOpen && line.startsWith("connecting") && line.endsWith("[OK]")) {
-      isOpen = true;
-      //serialOpened();
-    } else {
-      super.errorData(line);
-    }
-  }
+		// get list of ports available on this particular computer,
+		// by calling static method in CommPortIdentifier.
+		Enumeration pList = CommPortIdentifier.getPortIdentifiers();
+		String result = null;
+		// Process the list.
+		while (pList.hasMoreElements()) {
+			CommPortIdentifier cpi = (CommPortIdentifier) pList.nextElement();
+			if (cpi.getPortType() == CommPortIdentifier.PORT_SERIAL) {
+				result = cpi.getName();
+			}
+		}
 
-  private String getMappedComPortForWindows(String comPort) {
-    if (comPort.startsWith("COM")) {
-      comPort = "/dev/com" + comPort.substring(3);
-    }
-    return comPort;
-  }
+		return result;
+
+	}
+
+	@Override
+	protected void standardData(String line) {
+		serialData(line);
+	}
+
+	@Override
+	protected void errorData(String line) {
+		if (!isOpen && line.startsWith("connecting") && line.endsWith("[OK]")) {
+			isOpen = true;
+			// serialOpened();
+		} else {
+			super.errorData(line);
+		}
+	}
+
+	private String getMappedComPortForWindows(String comPort) {
+		if (comPort.startsWith("COM")) {
+			comPort = "/dev/com" + comPort.substring(3);
+		}
+		return comPort;
+	}
 
 }

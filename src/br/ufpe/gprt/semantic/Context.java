@@ -1,5 +1,6 @@
 package br.ufpe.gprt.semantic;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import br.ufpe.gprt.resources.ResourceManager;
@@ -13,20 +14,42 @@ import br.ufpe.gprt.resources.ResourceManager;
 public class Context {
 	private String topic;
 	private String description;
-	private List<Policy> policies;
+	private ArrayList<Policy> policies;
+	private PolicyManager.Enum_Action s_actionIfInContext;
+	private PolicyManager.Enum_Action s_actionIfOutContext;
 	
 	public Context(){
 		
 	}
-	public Context(String topic, String description, List<Policy> policies)
+	public Context(String topic, String description, ArrayList<Policy> policies, PolicyManager.Enum_Action actionCode1, PolicyManager.Enum_Action actionCode2)
 	{
 		this.topic = topic;
 		this.description = description;
 		this.policies = policies;
+		s_actionIfInContext = actionCode1;
+		s_actionIfOutContext = actionCode2;
+		
 	}
 	public String getTopic() {
 		return topic;
 	}
+	
+	public PolicyManager.Enum_Action getActionIn () {
+		return s_actionIfInContext;
+	}
+	
+	public PolicyManager.Enum_Action getActionOut () {
+		return s_actionIfOutContext;
+	}
+	
+	public void setActionIn (PolicyManager.Enum_Action actionIn){
+		s_actionIfInContext = actionIn;
+	}
+	
+	public void setActionOut (PolicyManager.Enum_Action actionOut){
+		s_actionIfOutContext = actionOut;
+	}
+	
 	public void setTopic(String topic) {
 		this.topic = topic;
 	}
@@ -36,10 +59,10 @@ public class Context {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	public List<Policy> getPolicies() {
+	public ArrayList<Policy> getPolicies() {
 		return policies;
 	}
-	public void setPolicies(List<Policy> policies) {
+	public void setPolicies(ArrayList<Policy> policies) {
 		this.policies = policies;
 	}
 	
@@ -51,9 +74,9 @@ public class Context {
 	public boolean removePolicy(Policy policy){
 		return this.policies.remove(policy);
 	}
-	public void activatePolicies() {
+	/*public void activatePolicies() {
 		for (Policy policy : this.policies) {
 			ResourceManager.getInstance().getPolicyManager().policyStart(policy);
 		}
-	}
+	}*/
 }

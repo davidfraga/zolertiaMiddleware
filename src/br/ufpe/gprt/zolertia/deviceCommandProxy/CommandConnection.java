@@ -102,9 +102,9 @@ public class CommandConnection extends SerialConnection {
             while ((line = input.readLine()) != null) {
               standardData(line);
             }
-            input.close();
-            System.err.println("SerialConnection command terminated.");
-            closeConnection();
+            //input.close();
+            //System.err.println("SerialConnection command terminated.");
+            //closeConnection();
           } catch (IOException e) {
             lastError = "Error when reading from SerialConnection command: " + e;
             System.err.println(lastError);
@@ -149,7 +149,7 @@ public class CommandConnection extends SerialConnection {
   }
 
   protected void standardData(String line) {
-    //serialData(line);
+    serialData(line);
   }
 
   protected void errorData(String line) {

@@ -12,13 +12,13 @@ import br.ufpe.gprt.semantic.PolicyManager.Enum_DataType;
  */
 public class Policy {
 	
-	private Enum_DataType s_dataTypeCode;
-	private Enum_Condition s_conditionCode;
+	private PolicyManager.Enum_DataType s_dataTypeCode;
+	private PolicyManager.Enum_Condition s_conditionCode;
 	private int s_conditionParam;
-	private Enum_Action s_actionCode;
+	
 		
 	
-	public Enum_Condition getCondition (){
+	public PolicyManager.Enum_Condition getCondition (){
 		return s_conditionCode;
 	}
 	
@@ -26,19 +26,17 @@ public class Policy {
 		return s_conditionParam;
 	}
 	
-	public Enum_Action getAction () {
-		return s_actionCode;
-	}
 	
-	public Enum_DataType getDataType (){
+	
+	public PolicyManager.Enum_DataType getDataType (){
 		return s_dataTypeCode;
 	}
 	
-	public Policy (Enum_DataType dataType, Enum_Condition conditionCode, int conditionParam, Enum_Action actionCode){				
+	public Policy (Enum_DataType dataType, Enum_Condition conditionCode, int conditionParam){				
 		s_dataTypeCode = dataType;
 		s_conditionCode = conditionCode;
 		s_conditionParam = conditionParam;
-		s_actionCode = actionCode;
+		
 	}
 
 }

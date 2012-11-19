@@ -27,8 +27,7 @@ public class Garbagge extends Thread {
 	public void run() {
 		while (true) {
 			if (zolertiaData.rootNode != null)
-				if (zolertiaData.rootNode.getChildren() != null
-					|| zolertiaData.rootNode.getChildren().size() > 0) {
+				if (zolertiaData.rootNode.getChildren() != null	&& zolertiaData.rootNode.getChildren().size() > 0) {
 				depthRun(zolertiaData.rootNode, zolertiaData.rootNode);
 			}
 			try {

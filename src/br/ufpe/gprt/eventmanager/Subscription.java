@@ -25,25 +25,12 @@ public class Subscription {
 	private java.lang.String endpoint;
 	private int port;
 
-	private br.ufpe.gprt.eventmanager.Part[] parts;
-
 	private int numberOfRetries = 3;
 
 	private java.util.Calendar dateTime;
 
 	public Subscription() {
-	}
-
-	public Subscription(java.lang.String topic, java.lang.String endpoint,
-			br.ufpe.gprt.eventmanager.Part[] parts, int numberOfRetries,
-			java.util.Calendar dateTime) {
-		this.topic = topic;
-		String host[] = endpoint.split(":");
-		this.endpoint = host[0];
-		this.port = Integer.parseInt(host[1]);
-		this.parts = parts;
-		this.numberOfRetries = numberOfRetries;
-		this.dateTime = dateTime;
+		
 	}
 
 	/**
@@ -70,7 +57,7 @@ public class Subscription {
 	 * @return endpoint
 	 */
 	public java.lang.String getEndpoint() {
-		return endpoint;
+		return endpoint + ":" + port;
 	}
 
 	/**
@@ -79,33 +66,9 @@ public class Subscription {
 	 * @param endpoint
 	 */
 	public void setEndpoint(java.lang.String endpoint) {
-		this.endpoint = endpoint;
-	}
-
-	/**
-	 * Gets the parts value for this Subscription.
-	 * 
-	 * @return parts
-	 */
-	public br.ufpe.gprt.eventmanager.Part[] getParts() {
-		return parts;
-	}
-
-	/**
-	 * Sets the parts value for this Subscription.
-	 * 
-	 * @param parts
-	 */
-	public void setParts(br.ufpe.gprt.eventmanager.Part[] parts) {
-		this.parts = parts;
-	}
-
-	public br.ufpe.gprt.eventmanager.Part getParts(int i) {
-		return this.parts[i];
-	}
-
-	public void setParts(int i, br.ufpe.gprt.eventmanager.Part _value) {
-		this.parts[i] = _value;
+		String host[] = endpoint.split(":");
+		this.endpoint = host[0];
+		this.port = Integer.parseInt(host[1]);
 	}
 
 	/**
@@ -147,8 +110,25 @@ public class Subscription {
 	/**
 	 * Send the data stored to endpoint and clean the data
 	 */
-	public void sendData() {
-		if (parts != null) {
+	// TODO corrigir método
+	public void sendData(String msg) {
+		// if (parts != null) {
+		Thread send = new Thread(new Sender(msg));
+		send.start();
+
+		// }
+	}
+
+	public class Sender implements Runnable {
+		String msg;
+
+		public Sender(String msg) {
+			this.msg = msg;
+		}
+
+		@Override
+		public void run() {
+			System.out.println(endpoint + "-" + port + "-" + msg);
 			Socket socket;
 			for (int i = 0; i < numberOfRetries; i++) {
 				// open socket and stream
@@ -157,35 +137,23 @@ public class Subscription {
 					DataOutputStream dataOutputStream = new DataOutputStream(
 							socket.getOutputStream());
 
-					// write reports
-					String data = extractReport();
-					data += this.dateTime.getTimeInMillis();
-					dataOutputStream.writeBytes(data);
-					dataOutputStream.write("\n".getBytes());
+					dataOutputStream.writeUTF(msg);
 					dataOutputStream.flush();
-					// close socket and stream
 					dataOutputStream.close();
 					socket.close();
-					System.out.println("Subscription: DATA SENT");
-					parts = null;
+					System.out.println("Subscription: DATA SENT to " + endpoint
+							+ ":" + port);
+
 					break;
 				} catch (UnknownHostException e) {
-					// TODO Auto-generated catch block
-					// e.printStackTrace();
+					System.out.println(e.getMessage());
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					// e.printStackTrace();
+					System.out.println(e.getMessage());
 				}
 			}
-		}
-	}
 
-	public String extractReport() {
-		String data = "BEMO-COFRA_REPORT\n";
-		for (Part item : parts) {
-			data += item.getKey() + "=" + item.getValue() + "\n";
 		}
-		return data;
+
 	}
 
 }

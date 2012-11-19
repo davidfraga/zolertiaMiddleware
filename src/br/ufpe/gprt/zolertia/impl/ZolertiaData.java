@@ -1,9 +1,12 @@
 package br.ufpe.gprt.zolertia.impl;
 
+//import gnu.io.CommPortIdentifier;
+
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 import br.ufpe.gprt.semantic.Policy;
 import br.ufpe.gprt.semantic.PolicyManager.Enum_Action;
@@ -17,12 +20,15 @@ import br.ufpe.gprt.zolertia.filter.ZolertiaEventsProcessing;
 /**
  * Class that has all resources of zolertia network, including nodes (topology),
  * sensor data, commands to send, activation of garbagge and processing threads
+ * 
  * @author GPRT-BEMO
- *
+ * 
  */
 public class ZolertiaData {
 
 	private static final int READING_LOOP = 3000;
+
+	private static final int ROOT_ID = 17;
 
 	private SerialConnection serial;
 
@@ -30,36 +36,45 @@ public class ZolertiaData {
 
 	public SensorNode rootNode;
 
-	private final String portName = "COM7";
+	private static String portName;
 
-	private Vector<SensorData> sensorsData;
+	private ArrayList<SensorData> sensorsData;
 
 	private Garbagge garbagge;
 
 	private ZolertiaEventsProcessing eventsProcessing;
 
-
 	public ZolertiaData() {
 
+		portName = "COM12";
+		System.out.println("Zolertia port: " + portName);
 		this.serial = new SerialDumpConnection(new ZolertiaListener() {
 
 			@Override
 			public void serialData(SerialConnection serialConnection,
 					String line) {
 				handleIncomingData(System.currentTimeMillis(), line);
-
+				System.out.println("Reading: " + line);
 			}
 
 		});
 		this.serial.open(portName);
 
-		sensorsData = new Vector<SensorData>();
+		sensorsData = new ArrayList<SensorData>();
 
 		garbagge = new Garbagge(this);
 		garbagge.start();
 
 		eventsProcessing = new ZolertiaEventsProcessing(this, READING_LOOP);
 		eventsProcessing.start();
+
+		//setZolertiasCommand("reboot");
+
+		// Forçando inicialização do rootNode
+
+		rootNode = new SensorNode();
+		rootNode.setId(ROOT_ID);
+
 	}
 
 	public void handleIncomingData(long systemTime, String line) {
@@ -68,14 +83,8 @@ public class ZolertiaData {
 			return;
 		}
 
-		System.out.println("SERIAL: " + line);
+		// System.out.println("SERIAL: " + line);
 		SensorData sensorData = SensorData.parseSensorData(line, systemTime);
-
-		// Forçando inicialização do rootNode
-		if (rootNode == null) {
-			rootNode = new SensorNode();
-			rootNode.setId(18);
-		}
 
 		if (sensorData != null) {
 			int nodeId = sensorData.getNodeID();
@@ -103,15 +112,20 @@ public class ZolertiaData {
 				}
 			}
 			node.setNodeData(sensorData);
-			this.sensorsData.add(sensorData);
+			synchronized (this) {
+				this.sensorsData.add(sensorData);
+			}
 		}
 
 	}
 
-	public Vector<SensorData> getUnreadSensorsData() {
-		Vector<SensorData> result = this.sensorsData;
-		this.sensorsData.clear();
-		return result;
+	public synchronized ArrayList<SensorData> getUnreadSensorsData() {
+
+		return sensorsData;
+	}
+
+	public synchronized void clearSensorData() {
+		sensorsData.clear();
 	}
 
 	/**
@@ -147,20 +161,24 @@ public class ZolertiaData {
 		return ans;
 	}
 
-	public void createCommand(Policy policy) {
-		String command = policy.getDataType().name()+","+policy.getCondition().name()+","+policy.getConditionParam()+","+policy.getAction().name();
-		setZolertiasCommand(command);
-	}
+	/*
+	 * public void createCommand(Policy policy) { String command =
+	 * policy.getDataType
+	 * ().name()+","+policy.getCondition().name()+","+policy.getConditionParam
+	 * ()+","+policy.getAction().name(); setZolertiasCommand(command); }
+	 */
 
-	private void setZolertiasCommand(String command) {
+	public void sendZolertiaCommand(String command) {
 		System.out.println("Enviando comando '" + command + '\'');
 		this.serial.writeSerialData(command);
 		System.out.println("Comando enviado");
 	}
 
-	public void stopCommand(Policy policy) {
-		String command = policy.getDataType().name()+","+policy.getCondition().name()+","+policy.getConditionParam()+","+Enum_Action.STOP_POLICY;
-		setZolertiasCommand(command);
-	}
+//	public void stopCommand(Policy policy) {
+//		String command = policy.getDataType().name() + ","
+//				+ policy.getCondition().name() + ","
+//				+ policy.getConditionParam() + "," + Enum_Action.STOP_POLICY;
+//		sendZolertiaCommand(command);
+//	}
 
 }

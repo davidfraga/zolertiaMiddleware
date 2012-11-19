@@ -2,36 +2,34 @@ package br.ufpe.gprt.resources;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
 
 import br.ufpe.gprt.eventmanager.EventListener;
-import br.ufpe.gprt.eventmanager.Part;
 import br.ufpe.gprt.eventmanager.Subscription;
-import br.ufpe.gprt.semantic.Context;
+import br.ufpe.gprt.semantic.ActiveContext;
 import br.ufpe.gprt.semantic.ContextManager;
-import br.ufpe.gprt.semantic.Policy;
 import br.ufpe.gprt.semantic.PolicyManager;
-import br.ufpe.gprt.semantic.PolicyManager.Enum_Action;
-import br.ufpe.gprt.semantic.PolicyManager.Enum_Condition;
 import br.ufpe.gprt.semantic.PolicyManager.Enum_DataType;
-import br.ufpe.gprt.zolertia.device.SensorData;
 import br.ufpe.gprt.zolertia.impl.ZolertiaData;
 
 /**
  * Manages all resources from zolertia middleware. It's a singleton approach
- * There are others managers supported: ContextManager, PolicyManagar. 
- * The exchange of zolertia information is done through the ZolertiaData instance 
+ * There are others managers supported: ContextManager, PolicyManagar. The
+ * exchange of zolertia information is done through the ZolertiaData instance
+ * 
  * @author GPRT-BEMO
- *
+ * 
  */
 public class ResourceManager {
 
 	private static ResourceManager instance;
 	private static TreeMap<String, EventListener> listeners;
 	private static Vector<PolicyManager.Enum_Action> actions;
-	private static List<Subscription> subscriptions;
+	private static Map<String, Subscription> subscriptions;
 	private static ContextManager contextManager;
 	private static PolicyManager policyManager;
 	private static ZolertiaData zolertiaData;
@@ -41,10 +39,10 @@ public class ResourceManager {
 			instance = new ResourceManager();
 			listeners = new TreeMap<String, EventListener>();
 			actions = new Vector<PolicyManager.Enum_Action>();
-			subscriptions = new ArrayList<Subscription>();
-			contextManager = new ContextManager();
+			subscriptions = new HashMap<String, Subscription>();
 			policyManager = new PolicyManager();
 			zolertiaData = new ZolertiaData();
+			contextManager = new ContextManager();
 		}
 		return instance;
 	}
@@ -56,7 +54,7 @@ public class ResourceManager {
 	public PolicyManager getPolicyManager() {
 		return policyManager;
 	}
-	
+
 	public ZolertiaData getZolertiaData() {
 		return zolertiaData;
 	}
@@ -83,50 +81,44 @@ public class ResourceManager {
 	}
 
 	public synchronized void addSubscription(Subscription subscription) {
-		subscriptions.add(subscription);
+		subscriptions.put(subscription.getEndpoint(), subscription);
 	}
 
 	public synchronized void removeSubscription(String topic, String endpoint) {
-		for (Subscription item : subscriptions) {
-			if (item.getEndpoint().equals(endpoint)
-					&& item.getTopic().equals(topic))
-				subscriptions.remove(item);
-		}
+
+		subscriptions.remove(endpoint);
+
 	}
 
-	public synchronized Subscription[] getAllSubscriptions() {
-		return (Subscription[]) subscriptions.toArray();
+	public synchronized Collection<Subscription> getAllSubscriptions() {
+		return subscriptions.values();
 	}
 
-	public synchronized boolean clearSubscriptionsEndpoint(String endpoint) {
-		boolean result = false;
-		for (Subscription item : subscriptions) {
-			if (item.getEndpoint().equals(endpoint)) {
-				subscriptions.remove(item);
-				result = true;
+	public void publishToSubscriber(ActiveContext activeContext,
+			boolean dataEvaluated, Map<Enum_DataType, Double> dataTypes) {
+		for (String endpoints : activeContext.getInterestedSubscribers()) {
+
+			if (dataEvaluated) {
+				System.out.println(endpoints
+						+ ": Data is complying with the context - "
+						+ activeContext.getTopic());
+				Subscription sub = subscriptions.get(endpoints);
+				System.out.println(sub.getTopic());
+				String msg = "";
+				for (Enum_DataType type : dataTypes.keySet()) {
+					msg += type.name() + "=" + dataTypes.get(type) + "\n";
+					System.out.println("MSG: " + msg);
+				}
+				sub.sendData(msg);
 			}
-		}
-		return result;
-	}
 
-	/**
-	 * Public the information (in1) to relative subscribers
-	 * @param topic
-	 * @param in1
-	 * @return
-	 * @throws RemoteException
-	 */
-	public synchronized boolean publish(String topic, Part[] in1)
-			throws RemoteException {
-		boolean result = false;
-		for (Subscription item : subscriptions) {
-			if (item.getTopic().equals(topic)) {
-				item.setParts(in1);
-				item.sendData();
-				result = true;
+			else {
+				System.out.println(endpoints
+						+ ": Data isn't complying with the context - "
+						+ activeContext.getTopic());
 			}
+
 		}
-		return result;
 	}
 
 }
