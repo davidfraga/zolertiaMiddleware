@@ -173,6 +173,7 @@ public class EventManager implements EventManagerPort {
 		for ( ActiveContext activeContext : ResourceManager.getInstance().getContextManager().getActiveContexts()){
 			if(activeContext.getTopic().equalsIgnoreCase(topic)){
 				activeContext.removeSubscriber(endpoint);
+				if (activeContext.getInterestedSubscribers().size()==0) ResourceManager.getInstance().getContextManager().removeActiveContext(activeContext);
 				ResourceManager.getInstance().removeSubscription(topic, endpoint);
 				System.out.println("MANAGER: "+endpoint+" removed!");
 				break;

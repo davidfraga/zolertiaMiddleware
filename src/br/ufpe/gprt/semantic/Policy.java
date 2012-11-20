@@ -1,6 +1,5 @@
 package br.ufpe.gprt.semantic;
 
-import br.ufpe.gprt.semantic.PolicyManager.Enum_Action;
 import br.ufpe.gprt.semantic.PolicyManager.Enum_Condition;
 import br.ufpe.gprt.semantic.PolicyManager.Enum_DataType;
 

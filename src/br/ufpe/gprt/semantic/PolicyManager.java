@@ -43,9 +43,6 @@ public class PolicyManager {
 		GREATER_THAN, LESS_THAN, EQUALS
 	}
 
-	public enum Enum_Action {
-		SEND_PACKETS_LESS_FREQUENTLY, SEND_PACKETS_MORE_FREQUENTLY, REBOOT, STOP_POLICY
-	}
 
 	public enum Enum_DataType {
 

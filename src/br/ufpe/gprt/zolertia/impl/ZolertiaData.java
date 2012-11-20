@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 
 import br.ufpe.gprt.semantic.Policy;
-import br.ufpe.gprt.semantic.PolicyManager.Enum_Action;
 import br.ufpe.gprt.zolertia.device.SensorData;
 import br.ufpe.gprt.zolertia.device.SensorNode;
 import br.ufpe.gprt.zolertia.deviceCommandProxy.SerialConnection;

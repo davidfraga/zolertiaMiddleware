@@ -1,9 +1,9 @@
 package br.ufpe.gprt.semantic;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
-import br.ufpe.gprt.resources.ResourceManager;
+import br.ufpe.gprt.semantic.ContextManager.Enum_Action;
 
 /**
  * It's the topic, or interest of the client or the middleware.
@@ -15,39 +15,21 @@ public class Context {
 	private String topic;
 	private String description;
 	private ArrayList<Policy> policies;
-	private PolicyManager.Enum_Action s_actionIfInContext;
-	private PolicyManager.Enum_Action s_actionIfOutContext;
+	private Map<ContextManager.Enum_Action, ContextManager.ActionTypeRelatedToCondition> actions;
 	
 	public Context(){
 		
 	}
-	public Context(String topic, String description, ArrayList<Policy> policies, PolicyManager.Enum_Action actionCode1, PolicyManager.Enum_Action actionCode2)
+	public Context(String topic, String description, ArrayList<Policy> policies, Map<ContextManager.Enum_Action, ContextManager.ActionTypeRelatedToCondition> actions)
 	{
 		this.topic = topic;
 		this.description = description;
 		this.policies = policies;
-		s_actionIfInContext = actionCode1;
-		s_actionIfOutContext = actionCode2;
+		this.actions = actions;
 		
 	}
 	public String getTopic() {
 		return topic;
-	}
-	
-	public PolicyManager.Enum_Action getActionIn () {
-		return s_actionIfInContext;
-	}
-	
-	public PolicyManager.Enum_Action getActionOut () {
-		return s_actionIfOutContext;
-	}
-	
-	public void setActionIn (PolicyManager.Enum_Action actionIn){
-		s_actionIfInContext = actionIn;
-	}
-	
-	public void setActionOut (PolicyManager.Enum_Action actionOut){
-		s_actionIfOutContext = actionOut;
 	}
 	
 	public void setTopic(String topic) {
@@ -74,9 +56,10 @@ public class Context {
 	public boolean removePolicy(Policy policy){
 		return this.policies.remove(policy);
 	}
-	/*public void activatePolicies() {
-		for (Policy policy : this.policies) {
-			ResourceManager.getInstance().getPolicyManager().policyStart(policy);
-		}
-	}*/
+
+
+	public Map<ContextManager.Enum_Action, ContextManager.ActionTypeRelatedToCondition> getActions(){
+		return actions;
+	}
+	
 }
