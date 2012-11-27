@@ -3,10 +3,9 @@ package br.ufpe.gprt.semantic;
 import java.util.HashMap;
 import java.util.Map;
 
-import br.ufpe.gprt.resources.ResourceManager;
+import org.javatuples.Pair;
+
 import br.ufpe.gprt.zolertia.device.SensorData;
-import br.ufpe.gprt.zolertia.deviceCommandProxy.CommandConnection;
-import br.ufpe.gprt.zolertia.deviceCommandProxy.CommandFormat;
 
 /**
  * Manages the policies. The actualPolicyList provide information about policies
@@ -83,9 +82,14 @@ public class PolicyManager {
 	// TODO Verify if this method is in the correct place and its need
 	
 	
-	public Map<Enum_DataType, Double> policyEvaluation(br.ufpe.gprt.semantic.Policy individualPolicy,
-	SensorData currentSensorValue, boolean withAction) {
-		Map<Enum_DataType, Double> policyEvaluated = new HashMap<PolicyManager.Enum_DataType, Double>();
+	//public Map<Map<Enum_DataType, Double>, Map<Enum_DataType, Double>> policyEvaluation(br.ufpe.gprt.semantic.Policy individualPolicy,
+	public Pair<Pair<Enum_DataType, Double>, Pair<Enum_DataType, Double>> policyEvaluation(br.ufpe.gprt.semantic.Policy individualPolicy,
+	SensorData currentSensorValue) {
+		
+		Pair<Pair<Enum_DataType, Double>, Pair<Enum_DataType, Double>> contextData;
+		
+		Pair<Enum_DataType, Double> inContext = null;
+		Pair<Enum_DataType, Double> outContext = null;
 		double atualData = 0;
 		
 		if (individualPolicy.getDataType() == Enum_DataType.TEMPERATURE) {
@@ -101,28 +105,30 @@ public class PolicyManager {
 		
 		if (individualPolicy.getDataType() == Enum_DataType.HOP_COUNT) {
 			atualData = currentSensorValue.getHops();
-		}
+		}			
 		
 		if (individualPolicy.getCondition() == Enum_Condition.GREATER_THAN) {
 			if (atualData > individualPolicy.getConditionParam()){
-				policyEvaluated.put(individualPolicy.getDataType(), atualData);
-			}
+				inContext = new Pair<PolicyManager.Enum_DataType, Double>(individualPolicy.getDataType(), atualData);
+			} else outContext = new Pair<PolicyManager.Enum_DataType, Double>(individualPolicy.getDataType(), atualData);
 		}
 		
 		if (individualPolicy.getCondition() == Enum_Condition.LESS_THAN) {
 			if (atualData < individualPolicy.getConditionParam()){
-				policyEvaluated.put(individualPolicy.getDataType(), atualData);
-			}
+				inContext = new Pair<PolicyManager.Enum_DataType, Double>(individualPolicy.getDataType(), atualData);
+			} else outContext = new Pair<PolicyManager.Enum_DataType, Double>(individualPolicy.getDataType(), atualData);
 		}
 		
 		if (individualPolicy.getCondition() == Enum_Condition.EQUALS) {
 			if (atualData == individualPolicy
 					.getConditionParam()){
-				policyEvaluated.put(individualPolicy.getDataType(), atualData);
-			}
+				inContext = new Pair<PolicyManager.Enum_DataType, Double>(individualPolicy.getDataType(), atualData);
+			} else outContext = new Pair<PolicyManager.Enum_DataType, Double>(individualPolicy.getDataType(), atualData);
 		}
 		
-		return policyEvaluated;
+		contextData = new Pair<Pair<Enum_DataType,Double>, Pair<Enum_DataType,Double>>(inContext, outContext);
+		
+		return contextData;
 
 	}
 

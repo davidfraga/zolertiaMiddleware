@@ -3,18 +3,16 @@ package br.ufpe.gprt.zolertia.impl;
 //import gnu.io.CommPortIdentifier;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import br.ufpe.gprt.semantic.Policy;
 import br.ufpe.gprt.zolertia.device.SensorData;
 import br.ufpe.gprt.zolertia.device.SensorNode;
 import br.ufpe.gprt.zolertia.deviceCommandProxy.SerialConnection;
 import br.ufpe.gprt.zolertia.deviceCommandProxy.SerialDumpConnection;
 import br.ufpe.gprt.zolertia.filter.Garbagge;
-import br.ufpe.gprt.zolertia.filter.ZolertiaEventsProcessing;
+import br.ufpe.gprt.zolertia.filter.ZolertiaEventsMonitor;
 
 /**
  * Class that has all resources of zolertia network, including nodes (topology),
@@ -41,7 +39,7 @@ public class ZolertiaData {
 
 	private Garbagge garbagge;
 
-	private ZolertiaEventsProcessing eventsProcessing;
+	private ZolertiaEventsMonitor eventsProcessing;
 
 	public ZolertiaData() {
 
@@ -64,7 +62,7 @@ public class ZolertiaData {
 		garbagge = new Garbagge(this);
 		garbagge.start();
 
-		eventsProcessing = new ZolertiaEventsProcessing(this, READING_LOOP);
+		eventsProcessing = new ZolertiaEventsMonitor(this, READING_LOOP);
 		eventsProcessing.start();
 
 		//setZolertiasCommand("reboot");
@@ -76,7 +74,7 @@ public class ZolertiaData {
 
 	}
 
-	public void handleIncomingData(long systemTime, String line) {
+	public synchronized void handleIncomingData(long systemTime, String line) {
 		if (line.length() == 0 || line.charAt(0) == '#') {
 			// Ignore empty lines, comments, and annotations.
 			return;

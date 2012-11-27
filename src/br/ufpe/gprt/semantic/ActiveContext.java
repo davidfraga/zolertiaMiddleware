@@ -7,7 +7,7 @@ import br.ufpe.gprt.eventmanager.Subscription;
 public class ActiveContext {
 	
 	private Context s_context;
-	private ArrayList<String> s_interestedSubscribers;
+	private ArrayList<Subscription> s_interestedSubscribers;
 	
 	public Context getContext(){
 		return s_context;
@@ -15,7 +15,7 @@ public class ActiveContext {
 	
 	public ActiveContext(Context context){
 		s_context = context;
-		s_interestedSubscribers = new ArrayList<String>();
+		s_interestedSubscribers = new ArrayList<Subscription>();
 	}
 		
 	
@@ -23,20 +23,23 @@ public class ActiveContext {
 		return  s_context.getPolicies();
 	}
 	
-	public ArrayList<String> getInterestedSubscribers (){
+	public ArrayList<Subscription> getInterestedSubscribers (){
 		return s_interestedSubscribers;
 	}
 	
-	public void addInterestedSubscriber(String endpoint){
+	public void addInterestedSubscriber(Subscription endpoint){
 		s_interestedSubscribers.add(endpoint);
 	}
 	
-	public boolean containSubscriber (String endpoint){
+	public boolean containSubscriber(Subscription endpoint){
 		return s_interestedSubscribers.contains(endpoint);
 	}
 	
-	public void removeSubscriber (String subscriber){
-		s_interestedSubscribers.remove(subscriber);
+	public void removeSubscriber (String endpoint){
+		for (Subscription item : s_interestedSubscribers) {
+			if (item.getEndpoint().equals(endpoint)) s_interestedSubscribers.remove(item);
+		}
+		
 	}
 
 	public String getTopic() {

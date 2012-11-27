@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import br.ufpe.gprt.eventmanager.Subscription;
 import br.ufpe.gprt.resources.ResourceManager;
 import br.ufpe.gprt.semantic.PolicyManager.Enum_Condition;
 import br.ufpe.gprt.semantic.PolicyManager.Enum_DataType;
@@ -46,17 +47,18 @@ public class ContextManager {
 				.getInstance()
 				.getPolicyManager()
 				.createPolicy(Enum_DataType.TEMPERATURE,
-						Enum_Condition.GREATER_THAN, 25);
+						Enum_Condition.GREATER_THAN, 28);
 		Policy h2_policy = ResourceManager
 				.getInstance()
 				.getPolicyManager()
 				.createPolicy(Enum_DataType.TEMPERATURE,
 						Enum_Condition.LESS_THAN, 30);
 
-		Enum_Action actionIn = Enum_Action.SEND_PACKETS_LESS_FREQUENTLY;
+		Enum_Action actionIn = Enum_Action.NOTHING;
 		Enum_Action actionOut = Enum_Action.SEND_PACKETS_MORE_FREQUENTLY;
 		ArrayList<Policy> policies = new ArrayList<Policy>();
 		policies.add(h1_policy);
+		policies.add(h2_policy);
 
 		Map<Enum_Action, ActionTypeRelatedToCondition> actions = new HashMap<ContextManager.Enum_Action, ContextManager.ActionTypeRelatedToCondition>();
 		actions.put(actionIn, ActionTypeRelatedToCondition.IN);
@@ -73,7 +75,7 @@ public class ContextManager {
 				.getInstance()
 				.getPolicyManager()
 				.createPolicy(Enum_DataType.TEMPERATURE,
-						Enum_Condition.LESS_THAN, 30);
+						Enum_Condition.GREATER_THAN, 30);
 		Enum_Action actionOut2 = Enum_Action.SEND_PACKETS_LESS_FREQUENTLY;
 		Enum_Action actionIn2 = Enum_Action.SEND_PACKETS_MORE_FREQUENTLY;
 		ArrayList<Policy> policies2 = new ArrayList<Policy>();
@@ -122,10 +124,8 @@ public class ContextManager {
 		policies3.add(policy3);
 
 		Map<Enum_Action, ActionTypeRelatedToCondition> actions3 = new HashMap<ContextManager.Enum_Action, ContextManager.ActionTypeRelatedToCondition>();
-		actions3.put(actionEnter3,
-				ActionTypeRelatedToCondition.ENTER);
-		actions3.put(actionLeave3,
-				ActionTypeRelatedToCondition.LEAVE);
+		actions3.put(actionEnter3, ActionTypeRelatedToCondition.ENTER);
+		actions3.put(actionLeave3, ActionTypeRelatedToCondition.LEAVE);
 
 		Context high_temperature = new Context(topic3, description3, policies3,
 				actions3);
@@ -252,20 +252,17 @@ public class ContextManager {
 						.getInstance()
 						.getZolertiaData()
 						.sendZolertiaCommand(
-								CommandFormat.getTemperatureCommand(
-										CommandType.INSERT, context
-												.getPolicies(), item, context
-												.getActions().get(item)));
+								CommandFormat.getPeriodCommand(item));
 			if (item == Enum_Action.REBOOT)
 				ResourceManager.getInstance().getZolertiaData()
 						.sendZolertiaCommand(item.name().toLowerCase());
 
 		}
 	}
-	
-	public void deactivateContextAction(ActiveContext activeContext) {		
+
+	public void deactivateContextAction(ActiveContext activeContext) {
 		Context context = activeContext.getContext();
-		System.out.println("Deactivating context "+context.getTopic());
+		System.out.println("Deactivating context " + context.getTopic());
 		for (Enum_Action item : context.getActions().keySet()) {
 			if (item == Enum_Action.SEND_PACKETS_LESS_FREQUENTLY
 					|| item == Enum_Action.SEND_PACKETS_MORE_FREQUENTLY)
@@ -284,30 +281,29 @@ public class ContextManager {
 		}
 	}
 
-	public void insertActiveContext(Context context, String endpoint) {
-		if (predefinedContexts.contains(context)) {
-			boolean activeContextFound = false;
+	public void insertActiveContext(Context context, Subscription subscriber) {
 
-			for (ActiveContext item : activeContexts) {
-				if (item.getContext() == context) {
-					item.addInterestedSubscriber(endpoint);
-					activeContextFound = true;
-					break;
-				}
+		boolean activeContextFound = false;
+
+		for (ActiveContext item : activeContexts) {
+			if (item.getContext() == context) {
+				item.addInterestedSubscriber(subscriber);
+				activeContextFound = true;
+				break;
 			}
-
-			if (!activeContextFound) {
-				ActiveContext newActiveContext = new ActiveContext(context);
-				newActiveContext.addInterestedSubscriber(endpoint);
-				activeContexts.add(newActiveContext);
-				activateContextAction(newActiveContext);
-			}
-
 		}
+
+		if (!activeContextFound) {
+			ActiveContext newActiveContext = new ActiveContext(context);
+			newActiveContext.addInterestedSubscriber(subscriber);
+			activeContexts.add(newActiveContext);
+			// activateContextAction(newActiveContext);
+		}
+
 	}
 
-	public void removeActiveContext(ActiveContext context) {		
-		this.deactivateContextAction(context);
+	public void removeActiveContext(ActiveContext context) {
+		// this.deactivateContextAction(context);
 		this.activeContexts.remove(context);
 	}
 

@@ -8,6 +8,7 @@ import org.osgi.service.component.ComponentContext;
 
 import br.ufpe.gprt.eventmanager.EventManagerPort;
 import br.ufpe.gprt.eventmanager.Subscription;
+import br.ufpe.gprt.eventmanager.Subscription.Sender;
 import br.ufpe.gprt.resources.ResourceManager;
 import br.ufpe.gprt.semantic.ActiveContext;
 import br.ufpe.gprt.semantic.Context;
@@ -71,7 +72,7 @@ public class EventManager implements EventManagerPort {
 		}
 		LOG.debug("Started "
 				+ ctx.getBundleContext().getBundle().getSymbolicName());
-		
+
 		ResourceManager.getInstance();
 
 	}
@@ -110,48 +111,13 @@ public class EventManager implements EventManagerPort {
 	@Override
 	public boolean subscribe(String topic, String endpoint)
 			throws RemoteException {
-		boolean topicExists = false;
-		boolean topicActive = false;
-		// Ensure if this topic is already predefinied
-		for (Context item : ResourceManager.getInstance().getContextManager()
-				.getPredefinedContexts()) {
-			System.out.println("Contexto pre definido : " + item.getTopic());
-			if (item.getTopic().equals(topic)) {
-				System.out
-						.println("Contexto pre definido = ao topico desejado ");
-				for (ActiveContext activeContext : ResourceManager
-						.getInstance().getContextManager().getActiveContexts()) {
-					System.out.println("Contexto ativo :"
-							+ activeContext.getTopic());
-					if (activeContext.getTopic().equals(topic)) {
-						System.out
-								.println("O contexto ativo ja existe...adicionando subscriber interessado :"
-										+ endpoint);
-						activeContext.addInterestedSubscriber(endpoint);
-						topicActive = true;
-						break;
-					}
 
-				}
+		Subscription subscriber = new Subscription(topic, endpoint);
+		Thread subscription = new Thread(subscriber);
+		ResourceManager.getInstance().addSubscription(subscriber);
+		subscription.start();
 
-				if (!topicActive) {
-					System.out.println("Adicionou novo contexto ativo :"
-							+ item.getTopic() + "e adicionou o subscriber "
-							+ endpoint);
-					ResourceManager.getInstance().getContextManager()
-							.insertActiveContext(item, endpoint);
-				}
-
-				Subscription subscriber = new Subscription();
-				subscriber.setTopic(topic);
-				subscriber.setEndpoint(endpoint);
-				ResourceManager.getInstance().addSubscription(subscriber);
-
-				return true;
-			}
-		}
-
-		return false;
+		return true;
 	}
 
 	/**
@@ -166,22 +132,26 @@ public class EventManager implements EventManagerPort {
 	@Override
 	public boolean unsubscribe(String topic, String endpoint)
 			throws RemoteException {
-		
-		//ResourceManager.getInstance().removeSubscription(topic, endpoint);
-		System.out.println("MANAGER: unsubscribing "+endpoint);
-		//Remover o susbscriber na lista de contextos ativos
-		for ( ActiveContext activeContext : ResourceManager.getInstance().getContextManager().getActiveContexts()){
-			if(activeContext.getTopic().equalsIgnoreCase(topic)){
+
+		// ResourceManager.getInstance().removeSubscription(topic, endpoint);
+		System.out.println("MANAGER: unsubscribing " + endpoint);
+		// Remover o susbscriber na lista de contextos ativos
+		for (ActiveContext activeContext : ResourceManager.getInstance()
+				.getContextManager().getActiveContexts()) {
+			if (activeContext.getTopic().equalsIgnoreCase(topic)) {
 				activeContext.removeSubscriber(endpoint);
-				if (activeContext.getInterestedSubscribers().size()==0) ResourceManager.getInstance().getContextManager().removeActiveContext(activeContext);
-				ResourceManager.getInstance().removeSubscription(topic, endpoint);
-				System.out.println("MANAGER: "+endpoint+" removed!");
+				if (activeContext.getInterestedSubscribers().size() == 0)
+					ResourceManager.getInstance().getContextManager()
+							.removeActiveContext(activeContext);
+				ResourceManager.getInstance().removeSubscription(topic,
+						endpoint);
+				System.out.println("MANAGER: " + endpoint + " removed!");
 				break;
 			}
 		}
-		
-		//Remover o subscriber na lista de subscribers do resource manager
-		
+
+		// Remover o subscriber na lista de subscribers do resource manager
+
 		return true;
 	}
 
@@ -194,11 +164,11 @@ public class EventManager implements EventManagerPort {
 	@Override
 	public String poll(String topic) throws RemoteException {
 		String result = "";
-//		for (Subscription item : ResourceManager.getInstance()
-//				.getAllSubscriptions()) {
-//			if (item.getTopic().equals(topic))
-//				result += item.extractReport() + "\n";
-//		}
+		// for (Subscription item : ResourceManager.getInstance()
+		// .getAllSubscriptions()) {
+		// if (item.getTopic().equals(topic))
+		// result += item.extractReport() + "\n";
+		// }
 		return result;
 	}
 

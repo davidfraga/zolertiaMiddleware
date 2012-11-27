@@ -11,6 +11,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Timer;
 
 /**
  * Subscription - this class store the information from the sensors and from the
@@ -19,7 +20,11 @@ import java.net.UnknownHostException;
  * @author GPRT-BEMO
  * 
  */
-public class Subscription {
+public class Subscription implements Runnable{
+	public static final int PERIOD_DEFAULT = 5000;
+	public static final int PERIOD_MIN = 3000;
+	public static final int PERIOD_MAX = 10000;
+
 	private java.lang.String topic;
 
 	private java.lang.String endpoint;
@@ -27,10 +32,24 @@ public class Subscription {
 
 	private int numberOfRetries = 3;
 
-	private java.util.Calendar dateTime;
+	private int period;
 
-	public Subscription() {
-		
+	private String data;
+
+	private boolean started;
+
+	public Subscription(String topic, String endpoint) {
+		this.topic = topic;
+		String[] data = endpoint.split(":");
+		this.endpoint = data[0];
+		this.port = Integer.parseInt(data[1]);
+		started = true;
+		setPeriod(PERIOD_DEFAULT);
+	}
+
+	public synchronized void setStatus(boolean start) {
+		started = start;
+		setPeriod(PERIOD_DEFAULT);
 	}
 
 	/**
@@ -88,35 +107,12 @@ public class Subscription {
 	public void setNumberOfRetries(int numberOfRetries) {
 		this.numberOfRetries = numberOfRetries;
 	}
-
-	/**
-	 * Gets the dateTime value for this Subscription.
-	 * 
-	 * @return dateTime
-	 */
-	public java.util.Calendar getDateTime() {
-		return dateTime;
-	}
-
-	/**
-	 * Sets the dateTime value for this Subscription.
-	 * 
-	 * @param dateTime
-	 */
-	public void setDateTime(java.util.Calendar dateTime) {
-		this.dateTime = dateTime;
-	}
-
-	/**
-	 * Send the data stored to endpoint and clean the data
-	 */
-	// TODO corrigir método
-	public void sendData(String msg) {
-		// if (parts != null) {
-		Thread send = new Thread(new Sender(msg));
-		send.start();
-
-		// }
+	
+	public synchronized void setPeriod(int period){
+		if (this.period != period) {
+			this.period = period;
+			System.out.println(endpoint + ":" + port + " set to period: "+period);
+		}
 	}
 
 	public class Sender implements Runnable {
@@ -128,7 +124,7 @@ public class Subscription {
 
 		@Override
 		public void run() {
-			System.out.println(endpoint + "-" + port + "-" + msg);
+			System.out.println("SUB - "+endpoint + ":" + port + " -> " + msg);
 			Socket socket;
 			for (int i = 0; i < numberOfRetries; i++) {
 				// open socket and stream
@@ -154,6 +150,27 @@ public class Subscription {
 
 		}
 
+	}
+
+	public synchronized void storeData(String msg) {
+		this.data = msg;
+	}
+
+	@Override
+	public void run() {
+		while (started) {
+			if (data != null) {
+				Thread send = new Thread(new Sender(this.data));
+				send.start();
+				//data = null;
+			}
+			try {
+				Thread.sleep(period);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 }
