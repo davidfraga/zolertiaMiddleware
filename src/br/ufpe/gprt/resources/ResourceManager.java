@@ -1,17 +1,13 @@
 package br.ufpe.gprt.resources;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.Vector;
 
 import org.javatuples.Pair;
 
-//import br.ufpe.gprt.eventmanager.EventListener;
 import br.ufpe.gprt.eventmanager.Subscription;
+import br.ufpe.gprt.eventmanager.Subscription.Status;
 import br.ufpe.gprt.semantic.ActiveContext;
 import br.ufpe.gprt.semantic.Context;
 import br.ufpe.gprt.semantic.ContextManager;
@@ -19,8 +15,9 @@ import br.ufpe.gprt.semantic.ContextManager.ActionTypeRelatedToCondition;
 import br.ufpe.gprt.semantic.ContextManager.Enum_Action;
 import br.ufpe.gprt.semantic.PolicyManager;
 import br.ufpe.gprt.semantic.PolicyManager.Enum_DataType;
-import br.ufpe.gprt.zolertia.deviceCommandProxy.CommandFormat;
+import br.ufpe.gprt.zolertia.device.RadioManager;
 import br.ufpe.gprt.zolertia.impl.ZolertiaData;
+//import br.ufpe.gprt.eventmanager.EventListener;
 
 /**
  * Manages all resources from zolertia middleware. It's a singleton approach
@@ -33,22 +30,21 @@ import br.ufpe.gprt.zolertia.impl.ZolertiaData;
 public class ResourceManager {
 
 	private static ResourceManager instance;
-	// private static TreeMap<String, EventListener> listeners;
-	//private static Vector<Enum_Action> actions;
-	// private static Map<String, Subscription> subscriptions;
 	private static ContextManager contextManager;
 	private static PolicyManager policyManager;
 	private static ZolertiaData zolertiaData;
+	private static RadioManager radioManager;
 
 	public static ResourceManager getInstance() {
 		if (instance == null) {
 			instance = new ResourceManager();
 			// listeners = new TreeMap<String, EventListener>();
-			//actions = new Vector<Enum_Action>();
+			// actions = new Vector<Enum_Action>();
 			// subscriptions = new HashMap<String, Subscription>();
 			policyManager = new PolicyManager();
 			zolertiaData = new ZolertiaData();
 			contextManager = new ContextManager();
+			radioManager = new RadioManager();
 		}
 		return instance;
 	}
@@ -63,6 +59,10 @@ public class ResourceManager {
 
 	public ZolertiaData getZolertiaData() {
 		return zolertiaData;
+	}
+	
+	public RadioManager getRadioManager(){
+		return radioManager;
 	}
 
 	/*
@@ -116,33 +116,43 @@ public class ResourceManager {
 	public void publishToSubscriber(ActiveContext activeContext,
 			List<Pair<Enum_DataType, Double>> dataTypes, boolean inContext) {
 
-		//activateZolertiaAction(activeContext);
-
-		for (Subscription endpoint : activeContext.getInterestedSubscribers()) {
-
-			System.out.println(endpoint.getEndpoint()
-					+ ": Data is complying with the context - "
-					+ activeContext.getTopic());
-
-			String msg = "";
-			for (Pair<Enum_DataType, Double> item : dataTypes) {
-				msg += item.getValue0().name() + "=" + item.getValue1() + "\n";
-				System.out.println("MSG: " + msg);
-			}
-			endpoint.storeData(msg);
-			
-			Map<Enum_Action, ActionTypeRelatedToCondition> activeActions = activeContext.getContext().getActions();
-			for (Enum_Action item : activeActions.keySet()) {
-				if (inContext){
-					if (activeActions.get(item) == ActionTypeRelatedToCondition.IN)
-						updateSubscription(endpoint, item);
-					
+		if (activeContext.isSelfManager()) {
+			// TODO actions for selfManager based on policies
+		} else
+			for (Subscription endpoint : activeContext
+					.getInterestedSubscribers()) {
+				if (endpoint.getStatus() == Status.DEAD) {
+					this.removeSubscription(activeContext.getTopic(),
+							endpoint.getEndpoint());
+					if (activeContext.getInterestedSubscribers().size() == 0)
+						contextManager.removeActiveContext(activeContext);
 				} else {
-					if (activeActions.get(item) == ActionTypeRelatedToCondition.OUT)
-						updateSubscription(endpoint, item);
+					System.out.println(endpoint.getEndpoint()
+							+ ": Data is complying with the context - "
+							+ activeContext.getTopic());
+
+					String msg = "";
+					for (Pair<Enum_DataType, Double> item : dataTypes) {
+						msg += item.getValue0().name() + "=" + item.getValue1()
+								+ "\n";
+						System.out.println("MSG: " + msg);
+					}
+					endpoint.storeData(msg);
+
+					Map<Enum_Action, ActionTypeRelatedToCondition> activeActions = activeContext
+							.getContext().getActions();
+					for (Enum_Action item : activeActions.keySet()) {
+						if (inContext) {
+							if (activeActions.get(item) == ActionTypeRelatedToCondition.IN)
+								updateSubscription(endpoint, item);
+
+						} else {
+							if (activeActions.get(item) == ActionTypeRelatedToCondition.OUT)
+								updateSubscription(endpoint, item);
+						}
+					}
 				}
 			}
-		}
 	}
 
 	private void updateSubscription(Subscription endpoint, Enum_Action item) {
@@ -154,69 +164,55 @@ public class ResourceManager {
 			endpoint.setPeriod(Subscription.PERIOD_MIN);
 			break;
 		case NOTHING:
-			endpoint.setPeriod(Subscription.PERIOD_DEFAULT);
+			boolean defaultMode = false;
+			endpoint.setAction(defaultMode);
+			break;
+		case DEFAULT:
+			defaultMode = true;
+			endpoint.setAction(defaultMode);
 			break;
 		default:
 			break;
 		}
 	}
-/*
-	private void activateZolertiaAction(ActiveContext activeContext) {
-		for (Enum_Action item : activeContext.getContext().getActions()
-				.keySet()) {
-			boolean isNewAction = activateAction(item);
+	/*
+	 * private void activateZolertiaAction(ActiveContext activeContext) { for
+	 * (Enum_Action item : activeContext.getContext().getActions() .keySet()) {
+	 * boolean isNewAction = activateAction(item);
+	 * 
+	 * if (isNewAction && canIncludeNewAction(item)) {
+	 * contextManager.activateContextAction(activeContext);
+	 * changeSubscriptionsStatus(activeContext, item); } }
+	 * 
+	 * }
+	 * 
+	 * private boolean canIncludeNewAction(Enum_Action item) { boolean result =
+	 * false;
+	 * 
+	 * switch (item) { case SEND_PACKETS_LESS_FREQUENTLY: // if
+	 * (actions.contains(Enum_Action.SEND_PACKETS_MORE_FREQUENTLY)) break;
+	 * 
+	 * default: break; }
+	 * 
+	 * return result; }
+	 */
 
-			if (isNewAction && canIncludeNewAction(item)) {
-				contextManager.activateContextAction(activeContext);
-				changeSubscriptionsStatus(activeContext, item);
-			}
-		}
+	/*
+	 * private void changeSubscriptionsStatus(ActiveContext activeContext,
+	 * Enum_Action item) { for (Subscription sub :
+	 * activeContext.getInterestedSubscribers()) { switch (item) { case
+	 * SEND_PACKETS_LESS_FREQUENTLY: sub.increasePeriod(); break; case
+	 * SEND_PACKETS_MORE_FREQUENTLY: sub.decreasePeriod(); break; case NOTHING:
+	 * sub.setDefaultPeriod(); break; default: break; } }
+	 * 
+	 * }
+	 */
 
-	}
-
-	private boolean canIncludeNewAction(Enum_Action item) {
-		boolean result = false;
-
-		switch (item) {
-		case SEND_PACKETS_LESS_FREQUENTLY:
-			// if (actions.contains(Enum_Action.SEND_PACKETS_MORE_FREQUENTLY))
-			break;
-
-		default:
-			break;
-		}
-
-		return result;
-	}*/
-
-/*	private void changeSubscriptionsStatus(ActiveContext activeContext,
-			Enum_Action item) {
-		for (Subscription sub : activeContext.getInterestedSubscribers()) {
-			switch (item) {
-			case SEND_PACKETS_LESS_FREQUENTLY:
-				sub.increasePeriod();
-				break;
-			case SEND_PACKETS_MORE_FREQUENTLY:
-				sub.decreasePeriod();
-				break;
-			case NOTHING:
-				sub.setDefaultPeriod();
-				break;
-			default:
-				break;
-			}
-		}
-
-	}*/
-
-/*	private boolean activateAction(Enum_Action item) {
-		boolean result = false;
-		if (!actions.contains(item)) {
-			actions.add(item);
-			result = true;
-		}
-
-		return result;
-	}*/
+	/*
+	 * private boolean activateAction(Enum_Action item) { boolean result =
+	 * false; if (!actions.contains(item)) { actions.add(item); result = true; }
+	 * 
+	 * return result; }
+	 */
 
 }

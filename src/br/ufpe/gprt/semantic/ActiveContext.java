@@ -8,7 +8,16 @@ public class ActiveContext {
 	
 	private Context s_context;
 	private ArrayList<Subscription> s_interestedSubscribers;
+	private boolean isSelfManager = false;
 	
+	public boolean isSelfManager() {
+		return isSelfManager;
+	}
+
+	public void setSelfManager(boolean isSelfManager) {
+		this.isSelfManager = isSelfManager;
+	}
+
 	public Context getContext(){
 		return s_context;
 	}

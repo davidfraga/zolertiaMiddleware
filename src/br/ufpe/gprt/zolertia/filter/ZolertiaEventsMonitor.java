@@ -49,9 +49,9 @@ public class ZolertiaEventsMonitor extends Thread {
 								
 								if (types.getValue0() == null) {
 									inContext = false;
-									dataTypes.add(types.getValue0());
-								} else
 									dataTypes.add(types.getValue1());
+								} else
+									dataTypes.add(types.getValue0());
 
 								if (inContext)
 									System.out.println("IN CONTEXT TO "

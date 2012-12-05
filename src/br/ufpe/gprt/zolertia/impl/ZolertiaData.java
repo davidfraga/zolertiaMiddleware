@@ -80,7 +80,8 @@ public class ZolertiaData {
 			return;
 		}
 
-		// System.out.println("SERIAL: " + line);
+		// TODO verificar se o dado é de sensor ou de controle
+		// if (sensor){
 		SensorData sensorData = SensorData.parseSensorData(line, systemTime);
 
 		if (sensorData != null) {
@@ -112,7 +113,12 @@ public class ZolertiaData {
 			synchronized (this) {
 				this.sensorsData.add(sensorData);
 			}
+			
 		}
+		// TODO if (controle){
+		// verificar se é do RPL. Caso positivo chamar o metricCheck
+		// verificar se são os canais. Caso positivo, chamar o radioManager
+		// }
 
 	}
 

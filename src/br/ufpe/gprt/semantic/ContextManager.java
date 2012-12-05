@@ -41,7 +41,7 @@ public class ContextManager {
 		// Pre-defined context: "human_body_temperature" T>25 - send packets
 		// more frequently
 		String topic = "human_body_temperature";
-		String description = "the human body temperature must be greater than 25ºC and less than 30ºC";
+		String description = "the human body temperature must be greater than 28ºC and less than 30ºC";
 
 		Policy h1_policy = ResourceManager
 				.getInstance()
@@ -54,7 +54,7 @@ public class ContextManager {
 				.createPolicy(Enum_DataType.TEMPERATURE,
 						Enum_Condition.LESS_THAN, 30);
 
-		Enum_Action actionIn = Enum_Action.NOTHING;
+		Enum_Action actionIn = Enum_Action.DEFAULT;
 		Enum_Action actionOut = Enum_Action.SEND_PACKETS_MORE_FREQUENTLY;
 		ArrayList<Policy> policies = new ArrayList<Policy>();
 		policies.add(h1_policy);
@@ -69,7 +69,7 @@ public class ContextManager {
 
 		// Pre-defined context: human body temperature 2 T
 		String topic2 = "human_body_temperature2";
-		String description2 = "the human body temperature must be less than 30ºC";
+		String description2 = "the ambient temperature must be less than 30ºC";
 
 		Policy h1_policy2 = ResourceManager
 				.getInstance()
@@ -208,7 +208,7 @@ public class ContextManager {
 				.createPolicy(Enum_DataType.BATERY_INFORMATION,
 						Enum_Condition.LESS_THAN, 20);
 		Enum_Action actionOut7 = Enum_Action.NOTHING;
-		Enum_Action actionIn7 = Enum_Action.SEND_PACKETS_LESS_FREQUENTLY;
+		Enum_Action actionIn7 = Enum_Action.CHANGE_METRIC_BATTERY_LEVEL;
 		policies7.add(policy7);
 
 		Map<Enum_Action, ActionTypeRelatedToCondition> actions7 = new HashMap<ContextManager.Enum_Action, ContextManager.ActionTypeRelatedToCondition>();
@@ -243,7 +243,7 @@ public class ContextManager {
 	}
 
 	public void activateContextAction(ActiveContext activeContext) {
-		System.out.println("Action Taken:");
+		/*System.out.println("Action Taken:");
 		Context context = activeContext.getContext();
 		for (Enum_Action item : context.getActions().keySet()) {
 			if (item == Enum_Action.SEND_PACKETS_LESS_FREQUENTLY
@@ -257,11 +257,11 @@ public class ContextManager {
 				ResourceManager.getInstance().getZolertiaData()
 						.sendZolertiaCommand(item.name().toLowerCase());
 
-		}
+		}*/
 	}
 
 	public void deactivateContextAction(ActiveContext activeContext) {
-		Context context = activeContext.getContext();
+		/*Context context = activeContext.getContext();
 		System.out.println("Deactivating context " + context.getTopic());
 		for (Enum_Action item : context.getActions().keySet()) {
 			if (item == Enum_Action.SEND_PACKETS_LESS_FREQUENTLY
@@ -278,7 +278,7 @@ public class ContextManager {
 				ResourceManager.getInstance().getZolertiaData()
 						.sendZolertiaCommand(item.name().toLowerCase());
 
-		}
+		}*/
 	}
 
 	public void insertActiveContext(Context context, Subscription subscriber) {
@@ -312,7 +312,7 @@ public class ContextManager {
 	}
 
 	public enum Enum_Action {
-		SEND_PACKETS_LESS_FREQUENTLY, SEND_PACKETS_MORE_FREQUENTLY, REBOOT, STOP_POLICY, CHANGE_METRIC_BATTERY_LEVEL, CHANGE_METRIC_0FUNCTION, CHANGE_METRIC_ETX, NOTHING, SEND_PACKET_IMMEDIATELY
+		SEND_PACKETS_LESS_FREQUENTLY, SEND_PACKETS_MORE_FREQUENTLY, REBOOT, STOP_POLICY, CHANGE_METRIC_BATTERY_LEVEL, CHANGE_METRIC_0FUNCTION, CHANGE_METRIC_ETX, NOTHING, SEND_PACKET_IMMEDIATELY, DEFAULT
 	}
 
 	public enum ActionTypeRelatedToCondition {

@@ -20,36 +20,42 @@ import java.util.Timer;
  * @author GPRT-BEMO
  * 
  */
-public class Subscription implements Runnable{
+public class Subscription implements Runnable {
 	public static final int PERIOD_DEFAULT = 5000;
 	public static final int PERIOD_MIN = 3000;
 	public static final int PERIOD_MAX = 10000;
+	public static final int MAX_NUM_OF_RETRIES = 9;
+	public static final int ITERATIONS_TO_REPLY = 3;
+	private double lastMomentSent;
 
 	private java.lang.String topic;
 
 	private java.lang.String endpoint;
 	private int port;
 
-	private int numberOfRetries = 3;
-
 	private int period;
 
 	private String data;
 
-	private boolean started;
+	private Status status;
 
 	public Subscription(String topic, String endpoint) {
 		this.topic = topic;
 		String[] data = endpoint.split(":");
 		this.endpoint = data[0];
 		this.port = Integer.parseInt(data[1]);
-		started = true;
+		status = Status.STARTED;
 		setPeriod(PERIOD_DEFAULT);
+		lastMomentSent = 0;
 	}
 
-	public synchronized void setStatus(boolean start) {
-		started = start;
-		setPeriod(PERIOD_DEFAULT);
+	public synchronized void setStatus(Status status) {
+		this.status = status;
+		System.out.println("SUB: status changed to " + this.status);
+	}
+
+	public Status getStatus() {
+		return status;
 	}
 
 	/**
@@ -90,32 +96,16 @@ public class Subscription implements Runnable{
 		this.port = Integer.parseInt(host[1]);
 	}
 
-	/**
-	 * Gets the numberOfRetries value for this Subscription.
-	 * 
-	 * @return numberOfRetries
-	 */
-	public int getNumberOfRetries() {
-		return numberOfRetries;
-	}
-
-	/**
-	 * Sets the numberOfRetries value for this Subscription.
-	 * 
-	 * @param numberOfRetries
-	 */
-	public void setNumberOfRetries(int numberOfRetries) {
-		this.numberOfRetries = numberOfRetries;
-	}
-	
-	public synchronized void setPeriod(int period){
+	public synchronized void setPeriod(int period) {
 		if (this.period != period) {
 			this.period = period;
-			System.out.println(endpoint + ":" + port + " set to period: "+period);
+			System.out.println(endpoint + ":" + port + " set to period: "
+					+ period);
 		}
 	}
 
 	public class Sender implements Runnable {
+
 		String msg;
 
 		public Sender(String msg) {
@@ -124,29 +114,44 @@ public class Subscription implements Runnable{
 
 		@Override
 		public void run() {
-			System.out.println("SUB - "+endpoint + ":" + port + " -> " + msg);
+			System.out.println("SUB - " + endpoint + ":" + port + " -> " + msg);
 			Socket socket;
-			for (int i = 0; i < numberOfRetries; i++) {
-				// open socket and stream
+			boolean sent = false;
+			for (int i = 0; i < MAX_NUM_OF_RETRIES / ITERATIONS_TO_REPLY; i++) {
+				for (int j = 0; j < MAX_NUM_OF_RETRIES / ITERATIONS_TO_REPLY; j++) {
+					// open socket and stream
+					try {
+						socket = new Socket(endpoint, port);
+						DataOutputStream dataOutputStream = new DataOutputStream(
+								socket.getOutputStream());
+
+						dataOutputStream.writeUTF(msg);
+						dataOutputStream.flush();
+						dataOutputStream.close();
+						socket.close();
+						System.out.println("Subscription: DATA SENT to "
+								+ endpoint + ":" + port);
+						sent = true;
+						lastMomentSent = System.currentTimeMillis() / 1000.0
+								- lastMomentSent;
+						setStatus(Status.STARTED);
+						break;
+					} catch (UnknownHostException e) {
+						System.out.println("SUB:UHE " + e.getMessage());						
+					} catch (IOException e) {
+						System.out.println("SUB:IOE " + e.getMessage());						
+					}
+				}
+				if (sent) break;
 				try {
-					socket = new Socket(endpoint, port);
-					DataOutputStream dataOutputStream = new DataOutputStream(
-							socket.getOutputStream());
-
-					dataOutputStream.writeUTF(msg);
-					dataOutputStream.flush();
-					dataOutputStream.close();
-					socket.close();
-					System.out.println("Subscription: DATA SENT to " + endpoint
-							+ ":" + port);
-
-					break;
-				} catch (UnknownHostException e) {
-					System.out.println(e.getMessage());
-				} catch (IOException e) {
-					System.out.println(e.getMessage());
+					Thread.sleep(period);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
+
+			if (!sent) setStatus(Status.DEAD);
 
 		}
 
@@ -158,19 +163,35 @@ public class Subscription implements Runnable{
 
 	@Override
 	public void run() {
-		while (started) {
-			if (data != null) {
-				Thread send = new Thread(new Sender(this.data));
-				send.start();
-				//data = null;
+		while (status != Status.DEAD) {
+			if (status == Status.STARTED) {
+				if (data != null) {
+					setStatus(Status.WAITING);
+					Thread send = new Thread(new Sender(this.data));
+					send.start();
+					// data = null;
+				}
+
 			}
+
 			try {
-				Thread.sleep(period);
+				Thread.sleep(this.period);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
 
+	public enum Status {
+		DEAD, STARTED, WAITING
+	}
+
+	public void setAction(boolean defaultMode) {
+		if (defaultMode) {
+			setStatus(Status.STARTED);
+			setPeriod(PERIOD_DEFAULT);
+		} else {
+			setStatus(Status.WAITING);
+		}
+	}
 }
