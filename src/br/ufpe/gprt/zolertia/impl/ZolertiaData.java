@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import br.ufpe.gprt.resources.ResourceManager;
 import br.ufpe.gprt.zolertia.device.SensorData;
 import br.ufpe.gprt.zolertia.device.SensorNode;
 import br.ufpe.gprt.zolertia.deviceCommandProxy.SerialConnection;
@@ -79,7 +80,7 @@ public class ZolertiaData {
 			// Ignore empty lines, comments, and annotations.
 			return;
 		}
-
+		
 		// TODO verificar se o dado é de sensor ou de controle
 		// if (sensor){
 		SensorData sensorData = SensorData.parseSensorData(line, systemTime);
@@ -115,6 +116,10 @@ public class ZolertiaData {
 			}
 			
 		}
+		if (line.startsWith("2")){
+			ResourceManager.getInstance().getMetricManager().processNewLecture(line);
+		}
+		
 		// TODO if (controle){
 		// verificar se é do RPL. Caso positivo chamar o metricCheck
 		// verificar se são os canais. Caso positivo, chamar o radioManager

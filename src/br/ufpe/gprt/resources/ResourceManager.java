@@ -15,6 +15,7 @@ import br.ufpe.gprt.semantic.ContextManager.ActionTypeRelatedToCondition;
 import br.ufpe.gprt.semantic.ContextManager.Enum_Action;
 import br.ufpe.gprt.semantic.PolicyManager;
 import br.ufpe.gprt.semantic.PolicyManager.Enum_DataType;
+import br.ufpe.gprt.zolertia.RPLMonitor.MetricManager;
 import br.ufpe.gprt.zolertia.device.RadioManager;
 import br.ufpe.gprt.zolertia.impl.ZolertiaData;
 //import br.ufpe.gprt.eventmanager.EventListener;
@@ -34,19 +35,22 @@ public class ResourceManager {
 	private static PolicyManager policyManager;
 	private static ZolertiaData zolertiaData;
 	private static RadioManager radioManager;
+	private static MetricManager metricManager;
 
 	public static ResourceManager getInstance() {
 		if (instance == null) {
 			instance = new ResourceManager();
-			// listeners = new TreeMap<String, EventListener>();
-			// actions = new Vector<Enum_Action>();
-			// subscriptions = new HashMap<String, Subscription>();
 			policyManager = new PolicyManager();
 			zolertiaData = new ZolertiaData();
 			contextManager = new ContextManager();
 			radioManager = new RadioManager();
+			metricManager = new MetricManager();
 		}
 		return instance;
+	}
+
+	public MetricManager getMetricManager() {
+		return metricManager;
 	}
 
 	public ContextManager getContextManager() {
