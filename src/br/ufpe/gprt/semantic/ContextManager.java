@@ -38,7 +38,7 @@ public class ContextManager {
 	 */
 	public void fillContexts() {
 
-		// Pre-defined context: "human_body_temperature" T>25 - send packets
+		// Pre-defined context: "human_body_temperature" T<28 and T>30 - send packets
 		// more frequently
 		String topic = "human_body_temperature";
 		String description = "the human body temperature must be greater than 28ºC and less than 30ºC";
@@ -67,7 +67,7 @@ public class ContextManager {
 
 		predefinedContexts.add(humanbody);
 
-		// Pre-defined context: human body temperature 2 T
+		// Pre-defined context: human body temperature 2 T>30 send packets more frequently
 		String topic2 = "human_body_temperature2";
 		String description2 = "the ambient temperature must be less than 30ºC";
 
@@ -281,13 +281,13 @@ public class ContextManager {
 		}*/
 	}
 
-	public void insertActiveContext(Context context, Subscription subscriber) {
-
+	public boolean insertActiveContext(Context context, Subscription subscriber) {
+		boolean result = false;
 		boolean activeContextFound = false;
 
 		for (ActiveContext item : activeContexts) {
 			if (item.getContext() == context) {
-				item.addInterestedSubscriber(subscriber);
+				result = item.addInterestedSubscriber(subscriber);
 				activeContextFound = true;
 				break;
 			}
@@ -300,6 +300,7 @@ public class ContextManager {
 			// activateContextAction(newActiveContext);
 		}
 
+		return result;
 	}
 
 	public void removeActiveContext(ActiveContext context) {
@@ -312,7 +313,8 @@ public class ContextManager {
 	}
 
 	public enum Enum_Action {
-		SEND_PACKETS_LESS_FREQUENTLY, SEND_PACKETS_MORE_FREQUENTLY, REBOOT, STOP_POLICY, CHANGE_METRIC_BATTERY_LEVEL, CHANGE_METRIC_0FUNCTION, CHANGE_METRIC_ETX, NOTHING, SEND_PACKET_IMMEDIATELY, DEFAULT
+		SEND_PACKETS_LESS_FREQUENTLY, SEND_PACKETS_MORE_FREQUENTLY, REBOOT, STOP_POLICY, CHANGE_METRIC_BATTERY_LEVEL, 
+		CHANGE_METRIC_0FUNCTION, CHANGE_METRIC_ETX, NOTHING, SEND_PACKET_IMMEDIATELY, DEFAULT
 	}
 
 	public enum ActionTypeRelatedToCondition {

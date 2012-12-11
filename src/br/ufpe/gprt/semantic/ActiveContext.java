@@ -36,8 +36,17 @@ public class ActiveContext {
 		return s_interestedSubscribers;
 	}
 	
-	public void addInterestedSubscriber(Subscription endpoint){
-		s_interestedSubscribers.add(endpoint);
+	public boolean addInterestedSubscriber(Subscription endpoint){
+		boolean result = true;
+		for (Subscription item : s_interestedSubscribers) {
+			if (item.getEndpoint().equals(endpoint.getEndpoint())){
+				result = false;
+				break;
+			}
+		}
+		if (result) s_interestedSubscribers.add(endpoint);
+		
+		return result;
 	}
 	
 	public boolean containSubscriber(Subscription endpoint){

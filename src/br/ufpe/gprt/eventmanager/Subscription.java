@@ -169,7 +169,7 @@ public class Subscription implements Runnable {
 					setStatus(Status.WAITING);
 					Thread send = new Thread(new Sender(this.data));
 					send.start();
-					// data = null;
+					 
 				}
 
 			}

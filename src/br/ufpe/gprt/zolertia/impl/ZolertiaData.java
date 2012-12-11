@@ -82,7 +82,8 @@ public class ZolertiaData {
 		}
 		
 		// TODO verificar se o dado é de sensor ou de controle
-		// if (sensor){
+		//if (line.startsWith("1")){
+		// String data = line.subString(2, line.length);
 		SensorData sensorData = SensorData.parseSensorData(line, systemTime);
 
 		if (sensorData != null) {

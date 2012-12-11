@@ -111,13 +111,15 @@ public class EventManager implements EventManagerPort {
 	@Override
 	public boolean subscribe(String topic, String endpoint)
 			throws RemoteException {
+		boolean result = false;
+		Subscription subscriber = new Subscription(topic, endpoint);		
+		if (ResourceManager.getInstance().addSubscription(subscriber)) {
+			result = true;
+			Thread subscription = new Thread(subscriber);
+			subscription.start();
+		}
 
-		Subscription subscriber = new Subscription(topic, endpoint);
-		Thread subscription = new Thread(subscriber);
-		ResourceManager.getInstance().addSubscription(subscriber);
-		subscription.start();
-
-		return true;
+		return result;
 	}
 
 	/**
@@ -133,9 +135,8 @@ public class EventManager implements EventManagerPort {
 	public boolean unsubscribe(String topic, String endpoint)
 			throws RemoteException {
 
-		// ResourceManager.getInstance().removeSubscription(topic, endpoint);
 		System.out.println("MANAGER: unsubscribing " + endpoint);
-		// Remover o susbscriber na lista de contextos ativos
+		// Remove the susbscriber from the list of active contexts
 		
 		ResourceManager.getInstance().removeSubscription(topic,
 				endpoint);
@@ -143,16 +144,11 @@ public class EventManager implements EventManagerPort {
 				.getContextManager().getActiveContexts()) {
 			if (activeContext.getTopic().equalsIgnoreCase(topic)) {
 				activeContext.removeSubscriber(endpoint);
-//				if (activeContext.getInterestedSubscribers().size() == 0)
-//					ResourceManager.getInstance().getContextManager()
-//							.removeActiveContext(activeContext);
 
 				System.out.println("MANAGER: " + endpoint + " removed!");
 				break;
 			}
 		}
-
-		// Remover o subscriber na lista de subscribers do resource manager
 
 		return true;
 	}
@@ -166,11 +162,9 @@ public class EventManager implements EventManagerPort {
 	@Override
 	public String poll(String topic) throws RemoteException {
 		String result = "";
-		// for (Subscription item : ResourceManager.getInstance()
-		// .getAllSubscriptions()) {
-		// if (item.getTopic().equals(topic))
-		// result += item.extractReport() + "\n";
-		// }
+		
+		// TODO incomplete
+		
 		return result;
 	}
 

@@ -17,12 +17,11 @@
  * 
  * =============================================================================
  */
-package org.javatuples.valueintf;
-
+package org.javatuples;
 
 /** 
  * <p>
- * Marker interface for tuples with a "0" value.
+ * Marker interface for tuples with a "1" value.
  * </p> 
 
  * @since 1.1
@@ -30,8 +29,8 @@ package org.javatuples.valueintf;
  * @author Daniel Fern&aacute;ndez
  *
  */
-public interface IValue0<X> {
+public interface IValue1<X> {
 
-    public X getValue0();
+    public X getValue1();
     
 }

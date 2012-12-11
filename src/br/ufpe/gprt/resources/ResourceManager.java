@@ -69,29 +69,16 @@ public class ResourceManager {
 		return radioManager;
 	}
 
-	/*
-	 * public synchronized long getReceivedEvents() { return listeners.size(); }
-	 * 
-	 * public synchronized void addEventListener(String name, EventListener
-	 * eventListener) { this.listeners.put(name, eventListener); }
-	 * 
-	 * public synchronized void removeEventListener(String eventListenerName) {
-	 * listeners.remove(eventListenerName); }
-	 * 
-	 * public synchronized Vector<Enum_Action> getAvailableActions() { return
-	 * actions; }
-	 * 
-	 * public synchronized TreeMap<String, EventListener>
-	 * getRegisteredListeners() { return listeners; }
-	 */
-
-	public synchronized void addSubscription(Subscription subscription) {
+	public synchronized boolean addSubscription(Subscription subscription) {
+		boolean result = false;
 		for (Context item : contextManager.getPredefinedContexts()) {
 			if (item.getTopic().equalsIgnoreCase(subscription.getTopic())) {
-				contextManager.insertActiveContext(item, subscription);
+				result = contextManager.insertActiveContext(item, subscription);				
 				break;
 			}
 		}
+		
+		return result;
 
 	}
 
@@ -179,44 +166,6 @@ public class ResourceManager {
 			break;
 		}
 	}
-	/*
-	 * private void activateZolertiaAction(ActiveContext activeContext) { for
-	 * (Enum_Action item : activeContext.getContext().getActions() .keySet()) {
-	 * boolean isNewAction = activateAction(item);
-	 * 
-	 * if (isNewAction && canIncludeNewAction(item)) {
-	 * contextManager.activateContextAction(activeContext);
-	 * changeSubscriptionsStatus(activeContext, item); } }
-	 * 
-	 * }
-	 * 
-	 * private boolean canIncludeNewAction(Enum_Action item) { boolean result =
-	 * false;
-	 * 
-	 * switch (item) { case SEND_PACKETS_LESS_FREQUENTLY: // if
-	 * (actions.contains(Enum_Action.SEND_PACKETS_MORE_FREQUENTLY)) break;
-	 * 
-	 * default: break; }
-	 * 
-	 * return result; }
-	 */
 
-	/*
-	 * private void changeSubscriptionsStatus(ActiveContext activeContext,
-	 * Enum_Action item) { for (Subscription sub :
-	 * activeContext.getInterestedSubscribers()) { switch (item) { case
-	 * SEND_PACKETS_LESS_FREQUENTLY: sub.increasePeriod(); break; case
-	 * SEND_PACKETS_MORE_FREQUENTLY: sub.decreasePeriod(); break; case NOTHING:
-	 * sub.setDefaultPeriod(); break; default: break; } }
-	 * 
-	 * }
-	 */
-
-	/*
-	 * private boolean activateAction(Enum_Action item) { boolean result =
-	 * false; if (!actions.contains(item)) { actions.add(item); result = true; }
-	 * 
-	 * return result; }
-	 */
 
 }
