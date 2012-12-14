@@ -1,84 +1,86 @@
 package br.ufpe.gprt.zolertia.RPLMonitor;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+
+import br.ufpe.gprt.resources.ResourceManager;
+import br.ufpe.gprt.zolertia.deviceCommandProxy.CommandFormat;
 
 public class MetricManager {
-	
-	public enum SystemState {
-		NORMAL_EXECUTION, METRIC_CHECKER, WAITING
-	}
-	
+
 	private static final String ETX_METRIC = "7";
 
 	private static final String ENERGY_METRIC = "2";
 
 	private static final String ZERO_FUNCTION_METRIC = "0";
-	
-	private SystemState systemState;
-	
+
 	private int counterLimit;
-	
+
+	private int nodesNumber;
+
+	private boolean readyToRepair;
+
 	private ArrayList<MetricData> systemMetrics;
 
-	private ArrayList<NodeMetricInfo> nodesMetrics;
-	
+	private ArrayList<NodeMetricInfo> correctNodes;
+	private ArrayList<NodeMetricInfo> wrongNodes;
+
 	public MetricManager() {
+		readyToRepair = false;
 		counterLimit = 2;
-		systemState = SystemState.NORMAL_EXECUTION;
 		systemMetrics = new ArrayList<MetricData>();
-		
-		nodesMetrics = new ArrayList<NodeMetricInfo>();
+		correctNodes = new ArrayList<NodeMetricInfo>();
+		wrongNodes = new ArrayList<NodeMetricInfo>();
 	}
-	
-	//System metrics function
-	
+
+	// System metrics function
+	public boolean getReadyToRepair() {
+		return readyToRepair;
+	}
+
 	public ArrayList<MetricData> getAtualMetrics() {
 		return systemMetrics;
 	}
-	
-	public void clearSystemMetrics(){
+
+	public void clearSystemMetrics() {
 		systemMetrics.clear();
 	}
-	
-	public void setSystemState(SystemState systemState){
-		this.systemState = systemState;
+
+	public void setNodesNumber(int value) {
+		nodesNumber = value;
 	}
 
 	public void addSystemMetric(String newMetricInfo) {
-		
+
 		MetricData newMetric = selectMetricType(newMetricInfo);
 		systemMetrics.add(newMetric);
 	}
 
-	// Node metrics function
 	
-	public void printNodesMetrics(){
-		for (NodeMetricInfo node : nodesMetrics){
-			node.printMetrics();
-		}
-	}
-	
-	public int returnIndexOfSameTypeMetric(NodeMetricInfo node, MetricData newMetric){
+	public int returnIndexOfSameTypeMetric(NodeMetricInfo node,
+			MetricData newMetric) {
 		int i = 0;
-		for (MetricData nodeMetric : node.getNodeMetrics()){
-			if((nodeMetric.getType() == newMetric.getType()) & (nodeMetric.getFlags() == newMetric.getFlags())){
-					return i;
+		for (MetricData nodeMetric : node.getNodeMetrics()) {
+			if ((nodeMetric.getType() == newMetric.getType())
+					& (nodeMetric.getFlags() == newMetric.getFlags())) {
+				return i;
 			}
 			i++;
 		}
 		return (-1);
 	}
-	
-	
-	public ArrayList<NodeMetricInfo> getNodeMetrics(){
-		return nodesMetrics;
+
+	public ArrayList<NodeMetricInfo> getCorrectNodes() {
+		return correctNodes;
 	}
-	
-	public void setCounterLimit (int counterLimit){
+
+	public ArrayList<NodeMetricInfo> getWrongNodes() {
+		return wrongNodes;
+	}
+
+	public void setCounterLimit(int counterLimit) {
 		this.counterLimit = counterLimit;
 	}
-	
+
 	public boolean containMetric(MetricData systemMetric, NodeMetricInfo node) {
 
 		for (MetricData nodeMetric : node.getNodeMetrics()) {
@@ -91,16 +93,19 @@ public class MetricManager {
 
 	}
 
-	public void clearNodeMetricsInformation (){
-		for ( NodeMetricInfo node : nodesMetrics){
-			node.clearMetrics();
-			node.resetCounter();
+	public void clearNodeMetricsInformation() {
+		for (NodeMetricInfo correctNode : correctNodes) {
+			correctNode.clearMetrics();
+			correctNode.resetCounter();
+			wrongNodes.add(correctNode);
 		}
-	}
-	
-	public boolean containNode(int nodeId) {
+		correctNodes.clear();
 
-		for (NodeMetricInfo individualNode : nodesMetrics) {
+	}
+
+	public boolean correctNodescontainNode(int nodeId) {
+
+		for (NodeMetricInfo individualNode : correctNodes) {
 			if (nodeId == individualNode.getNodeId()) {
 				return true;
 			}
@@ -109,8 +114,20 @@ public class MetricManager {
 		return false;
 
 	}
-	
-	//Metric Manager functions
+
+	public boolean wrongNodescontainNode(int nodeId) {
+
+		for (NodeMetricInfo individualNode : wrongNodes) {
+			if (nodeId == individualNode.getNodeId()) {
+				return true;
+			}
+		}
+
+		return false;
+
+	}
+
+	// Metric Manager functions
 
 	public MetricData selectMetricType(String newMetricInfo) {
 
@@ -118,116 +135,182 @@ public class MetricManager {
 
 		MetricData noMetricType = null;
 		if (fragments[2].equals(ETX_METRIC)) {
-			
+
 			MetricData newMetric = new EtxMetric(fragments);
 			return newMetric;
 		}
 		if (fragments[2].equals(ENERGY_METRIC)) {
-			
+
 			MetricData newMetric = new EnergyMetric(fragments);
 			return newMetric;
 		}
 		if (fragments[2].equals(ZERO_FUNCTION_METRIC)) {
-			
+
 			MetricData newMetric = new ZeroFunction(fragments);
 			return newMetric;
 		}
 		return noMetricType;
 	}
 
-	public void processNewLecture(String newMetricInfo) {
-		
-		int index = 0;
-		String[] fragments = newMetricInfo.split(" ");
-		int nodeId = Integer.parseInt(fragments[1]);
-		
-		MetricData newMetric = selectMetricType(newMetricInfo);
+	public boolean checkNodeMetrics(NodeMetricInfo node) {
 
-		if (!containNode(nodeId)) {
-			
-			NodeMetricInfo newNode = new NodeMetricInfo(nodeId);
-			newNode.addNewMetric(newMetric);
-			nodesMetrics.add(newNode);
-			
-		} else {
-			
-			for (NodeMetricInfo nodes : nodesMetrics) {
-				if (nodes.getNodeId() == nodeId) {
-		// Caution !!	
-					
-					index = returnIndexOfSameTypeMetric(nodes, newMetric);			
-					if(index != (-1)){
-						nodes.getNodeMetrics().remove(index);
-					}
-					
-					nodes.addNewMetric(newMetric);
-					
-					if(systemState == SystemState.WAITING){
-						nodes.incrementCounter();
-					}
+		boolean correctMetric = true;
+		if (node.getNodeMetrics().size() == systemMetrics.size()) {
+
+			for (MetricData systemMetric : systemMetrics) {
+
+				if (!containMetric(systemMetric, node)) {
+					correctMetric = false;
 					break;
 				}
 			}
 		}
-		
-		
+
+		else {
+			correctMetric = false;
+		}
+		return correctMetric;
 	}
 
-	public boolean metricCheck() {
+	public void eliminateWrongNodes() {
 
-		setSystemState(SystemState.METRIC_CHECKER);
-		System.out.println("Metric check was started.");
-		boolean correctMetric = true;
-		boolean readyToRepair = true;
+		for (NodeMetricInfo correctNode : correctNodes) {
+			wrongNodes.remove(correctNode);
+		}
+	}
 
-		for (NodeMetricInfo node : nodesMetrics) {
+	public void processNewLecture(String newMetricInfo) {
 
-			correctMetric = true;
-			if (node.getNodeMetrics().size() == systemMetrics.size()) {
+		boolean haveNewCorrectNodes = false;
+		int index = 0;
+		String[] fragments = newMetricInfo.split(" ");
+		int nodeId = Integer.parseInt(fragments[1]);
 
-				for (MetricData systemMetric : systemMetrics) {
-					
-					if (!containMetric(systemMetric, node)) {
-						correctMetric = false;
+		MetricData newMetric = selectMetricType(newMetricInfo);
+
+		newMetric.printMetric();
+
+		if (!correctNodescontainNode(nodeId)) {
+			if (!wrongNodescontainNode(nodeId)) {
+
+				NodeMetricInfo newNode = new NodeMetricInfo(nodeId);
+				newNode.addNewMetric(newMetric);
+				wrongNodes.add(newNode);
+
+				boolean checkCounter = false;
+				haveNewCorrectNodes = analizeNode(newNode, checkCounter);
+				
+				/*if (checkNodeMetrics(newNode)) {
+					haveNewCorrectNodes = true;
+					correctNodes.add(newNode);
+				}
+
+				else {
+					readyToRepair = false;
+					if (newNode.getNodeMetrics().size() == systemMetrics.size()) {
+						newNode.incrementCounter();
+						
+					}
+				}*/
+			}
+
+			else {
+				for (NodeMetricInfo nodes : wrongNodes) {
+					if (nodes.getNodeId() == nodeId) {
+						// Caution !!
+
+						if (!containMetric(newMetric, nodes)) {
+
+							index = returnIndexOfSameTypeMetric(nodes,
+									newMetric);
+							if (index != (-1)) {
+								nodes.getNodeMetrics().remove(index);
+							}
+							nodes.addNewMetric(newMetric);
+						}
+
+						boolean checkCounter = true;
+						haveNewCorrectNodes = analizeNode(nodes, checkCounter);
+						
+						/*if (checkNodeMetrics(nodes)) {
+								haveNewCorrectNodes = true;
+							correctNodes.add(nodes);
+						}
+
+						else {
+							readyToRepair = false;
+							if (nodes.getNodeMetrics().size() == systemMetrics
+									.size()) {
+								nodes.incrementCounter();
+
+								if (nodes.getCounter() >= counterLimit) {
+									// Reenviar Comando...unitario ou em grupo ?
+										resetAllNodeCounters();
+								}
+							}
+						}*/
 						break;
 					}
 				}
 			}
-
-			else {
-				correctMetric = false;
+			if (haveNewCorrectNodes) {
+				eliminateWrongNodes();
+				metricCheck();
 			}
 
-			node.setCorrectMetric(correctMetric);
 		}
-		
-		for (NodeMetricInfo node : nodesMetrics) {
-			if (!node.getCorrectMetric()) {
-				readyToRepair = false;
-				
-				if(node.getCounter() >= counterLimit)
-				{
-					// TODO Reenviar Comando
-					System.out.println("Limit reached... comand sent again");
-					//node.clearMetrics();
-					node.resetCounter();
+	}
+
+	private boolean analizeNode(NodeMetricInfo node, boolean checkCounter) {
+		boolean result = false;
+
+		if (checkNodeMetrics(node)) {
+			result = true;
+			correctNodes.add(node);
+		}
+
+		else {
+			readyToRepair = false;
+			if (node.getNodeMetrics().size() == systemMetrics.size()) {
+				node.incrementCounter();
+				if (checkCounter){
+					if (node.getCounter() >= counterLimit) {
+						// Reenviar Comando...unitario ou em grupo ?
+						String command = CommandFormat.getRPLCommand(node.getNodeId(), systemMetrics);
+						if (command!=null) ResourceManager.getInstance().getZolertiaData().sendZolertiaCommand(command);
+						resetAllNodeCounters();
+					}
 				}
 				
 			}
 		}
 		
-		if(!readyToRepair){
-			setSystemState(SystemState.WAITING);
-			System.out.println("System in wait mode. ");
+		
+		return result;
+	}
+
+	public void resetAllNodeCounters() {
+		for (NodeMetricInfo wrongNode : wrongNodes) {
+			wrongNode.resetCounter();
 		}
-		else {
-			setSystemState(SystemState.NORMAL_EXECUTION);
-			System.out.println("System in normal mode of operation. ");
+	}
+
+	public void resetReadyToRepair() {
+		readyToRepair = false;
+	}
+
+	public void metricCheck() {
+
+		System.out.println("Metric check was started.");
+
+		if ((wrongNodes.size() == 0) & (correctNodes.size() > 0)) {
+			readyToRepair = true;
+			System.out.println("System Ready to Repair");
 			clearNodeMetricsInformation();
-
+		} else {
+			System.out.println("System not Ready to Repair");
 		}
 
-		return readyToRepair;
 	}
 
 }

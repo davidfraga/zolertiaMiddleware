@@ -37,9 +37,9 @@ public class EnergyMetric extends MetricData {
 		
 	}
 	
-	void printMetric (){
+	public void printMetric (){
 		
-		System.out.println("Node " + this.getNodeId() + "Metric Energy : "+
+		System.out.println("Node " + this.getNodeId() + " Metric Energy : "+
 						   " " + this.getFlags() +
 						   " " + this.getAggr() +
 						   " " + this.getPrec() +
@@ -51,7 +51,7 @@ public class EnergyMetric extends MetricData {
 						   " " + this.getTlvValue());
 	}
 	
-	boolean compare(MetricData metric){
+	public boolean compare(MetricData metric){
 		
 		if(metric instanceof EnergyMetric){
 			EnergyMetric energyMetric = (EnergyMetric)metric;

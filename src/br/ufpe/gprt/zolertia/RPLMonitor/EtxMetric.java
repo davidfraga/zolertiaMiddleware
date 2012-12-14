@@ -12,7 +12,7 @@ public class EtxMetric extends MetricData{
 		}
 		
 		
-		void printMetric (){
+		public void printMetric (){
 			
 			System.out.println("Node " + this.getNodeId() + "Metric Etx : "+
 							   " " + this.getFlags() +
@@ -22,7 +22,7 @@ public class EtxMetric extends MetricData{
 							   " " + this.getEtx());
 		}
 
-		boolean compare(MetricData metric){
+		public boolean compare(MetricData metric){
 		
 			if(metric instanceof EtxMetric){
 			

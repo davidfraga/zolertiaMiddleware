@@ -7,7 +7,7 @@ public class ZeroFunction extends MetricData {
 		super(fragments);
 	}
 	
-	void printMetric (){
+	public void printMetric (){
 			
 			System.out.println("Node " + this.getNodeId() + "Metric zeroFunction : "+
 							   " " + this.getFlags() +
@@ -16,7 +16,7 @@ public class ZeroFunction extends MetricData {
 							   " " + this.getLength());
 		}
 	
-	boolean compare(MetricData metric){
+	public boolean compare(MetricData metric){
 
 		if(metric instanceof ZeroFunction){
 			ZeroFunction zeroFunction = (ZeroFunction)metric;

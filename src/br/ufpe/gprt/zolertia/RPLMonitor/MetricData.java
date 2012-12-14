@@ -9,27 +9,27 @@ public abstract class MetricData {
 	private int prec;
 	private int length;
 	
-	int getType(){
+	public int getType(){
 		return type;
 	}
-	int getFlags(){
+	public int getFlags(){
 		return flags;
 	}
-	int getAggr(){
+	public int getAggr(){
 		return aggr;
 	}
-	int getPrec (){
+	public int getPrec (){
 		return prec;
 	}
-	int getLength(){
+	public int getLength(){
 		return length;
 	}
-	int getNodeId(){
+	public int getNodeId(){
 		return nodeId;
 	}
 
-	abstract void printMetric();	
-	abstract boolean compare(MetricData metric);
+	public abstract void printMetric();	
+	public abstract boolean compare(MetricData metric);
 	
 	public MetricData (String[] fragments){
 		

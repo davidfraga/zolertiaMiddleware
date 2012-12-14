@@ -7,11 +7,10 @@ public class NodeMetricInfo {
 	
 	private int nodeId;
 	private ArrayList<MetricData> nodeMetrics;
-	private boolean correctMetric;
 	private int counter;
 	
 	public NodeMetricInfo (int nodeId){
-		correctMetric = false;
+		
 		counter = 0;
 		this.nodeId = nodeId;
 		nodeMetrics = new ArrayList<MetricData>();
@@ -40,14 +39,6 @@ public class NodeMetricInfo {
 	
 	public void resetCounter(){
 		counter = 0;
-	}
-	
-	public boolean getCorrectMetric (){
-		return correctMetric;
-	}
-	
-	public void setCorrectMetric (boolean correctMetric){
-		this.correctMetric = correctMetric;
 	}
 		
 	public void clearMetrics (){
